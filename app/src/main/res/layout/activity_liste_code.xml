@@ -7,31 +7,50 @@
     tools:context=".MainActivity">
 
     <TextView
-        android:id="@+id/titreListGare"
+        android:id="@+id/titreListCode"
         android:layout_width="match_parent"
         android:layout_height="40dp"
-        android:text="@string/titre_listgare"
+        android:text="@string/titre_listcode"
         android:textSize="18sp"
         android:textStyle="bold"/>
 
     <EditText
-        android:id="@+id/search_gare"
+        android:id="@+id/search_code"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/titreListGare"
+        android:layout_below="@id/titreListCode"
         android:hint="@string/search_gare"
         android:inputType="text"
         android:autofillHints="textCapSentences"
         tools:ignore="MissingConstraints" />
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/list_gare"
+        android:id="@+id/list_code"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@id/search_gare"
+        android:layout_below="@id/search_code"
         android:paddingHorizontal="10dp"
         android:paddingVertical="10dp"
         tools:ignore="MissingConstraints" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/back_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="16dp"
+        android:contentDescription="Retour à la liste des gares"
+        android:src="@drawable/ic_back"
+        app:backgroundTint="@color/bgPrimary"
+        app:fabSize="normal"
+        app:tint="@android:color/white"
+        tools:ignore="MissingConstraints"
+        tools:layout_editor_absoluteX="355dp"
+        tools:layout_editor_absoluteY="0dp" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/add_button"
