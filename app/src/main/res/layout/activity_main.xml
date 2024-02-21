@@ -8,16 +8,20 @@
 
     <TextView
         android:id="@+id/titreListGare"
+        android:text="@string/titre_listgare"
         android:layout_width="match_parent"
         android:layout_height="40dp"
-        android:text="@string/titre_listgare"
+        android:background="@color/bgPrimary"
+        android:textAlignment="center"
+        android:gravity="center"
+        android:textColor="@color/white"
         android:textSize="18sp"
         android:textStyle="bold"/>
 
     <EditText
         android:id="@+id/search_gare"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="60dp"
         android:layout_below="@id/titreListGare"
         android:hint="@string/search_gare"
         android:inputType="text"
@@ -34,21 +38,14 @@
         tools:ignore="MissingConstraints" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/add_button"
+        android:id="@+id/add_gare"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentEnd="true"
+        android:layout_margin="16dp"
         android:layout_alignParentBottom="true"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginBottom="16dp"
-        android:contentDescription="Ajouter un code"
+        android:layout_alignParentEnd="true"
         android:src="@drawable/ic_add"
-        app:fabSize="normal"
-        app:tint="@android:color/white"
-        tools:ignore="MissingConstraints"
         app:backgroundTint="@color/bgPrimary"
-        tools:layout_editor_absoluteX="355dp"
-        tools:layout_editor_absoluteY="0dp" />
+        app:tint="@android:color/white"
+        app:fabSize="normal"/>
 </RelativeLayout >

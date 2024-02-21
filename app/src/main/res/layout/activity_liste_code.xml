@@ -8,20 +8,24 @@
 
     <TextView
         android:id="@+id/titreListCode"
+        android:text="@string/titre_listcode"
         android:layout_width="match_parent"
         android:layout_height="40dp"
-        android:text="@string/titre_listcode"
+        android:background="@color/bgPrimary"
+        android:textAlignment="center"
+        android:gravity="center"
+        android:textColor="@color/white"
         android:textSize="18sp"
-        android:textStyle="bold"/>
+        android:textStyle="bold" />
 
     <EditText
         android:id="@+id/search_code"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="60dp"
         android:layout_below="@id/titreListCode"
-        android:hint="@string/search_gare"
-        android:inputType="text"
         android:autofillHints="textCapSentences"
+        android:hint="@string/search_code"
+        android:inputType="text"
         tools:ignore="MissingConstraints" />
 
     <androidx.recyclerview.widget.RecyclerView
@@ -33,41 +37,28 @@
         android:paddingVertical="10dp"
         tools:ignore="MissingConstraints" />
 
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
+    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
         android:id="@+id/back_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentStart="true"
+        android:layout_margin="16dp"
         android:layout_alignParentBottom="true"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginBottom="16dp"
+        android:layout_alignParentStart="true"
+        app:icon="@drawable/ic_back"
+        android:text="Retour aux gares"
         android:contentDescription="Retour à la liste des gares"
-        android:src="@drawable/ic_back"
         app:backgroundTint="@color/bgPrimary"
-        app:fabSize="normal"
-        app:tint="@android:color/white"
-        tools:ignore="MissingConstraints"
-        tools:layout_editor_absoluteX="355dp"
-        tools:layout_editor_absoluteY="0dp" />
+        style="@style/Widget.MaterialComponents.Button.Icon"/>
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/add_button"
+        android:id="@+id/add_codeporte"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentEnd="true"
+        android:layout_margin="16dp"
         android:layout_alignParentBottom="true"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginBottom="16dp"
-        android:contentDescription="Ajouter un code"
+        android:layout_alignParentEnd="true"
         android:src="@drawable/ic_add"
-        app:fabSize="normal"
-        app:tint="@android:color/white"
-        tools:ignore="MissingConstraints"
         app:backgroundTint="@color/bgPrimary"
-        tools:layout_editor_absoluteX="355dp"
-        tools:layout_editor_absoluteY="0dp" />
+        app:tint="@android:color/white"
+        app:fabSize="normal"/>
 </RelativeLayout >

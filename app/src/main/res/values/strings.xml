@@ -3,5 +3,7 @@
     <string name="titre_listgare">Liste des gares</string>
     <string name="titre_listcode">Liste des codes de la gare</string>
     <string name="search_gare">Rechercher une gare...</string>
+    <string name="search_code">Rechercher un code...</string>
     <string name="titre_addgare">Ajouter une gare</string>
+    <string name="titre_addcode">Ajouter un code</string>
 </resources>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -52,18 +52,16 @@
 
     </LinearLayout>
 
-    <com.google.android.material.button.MaterialButton
+    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
         android:id="@+id/modifsave_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom|center"
         android:layout_margin="16dp"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
         app:icon="@drawable/ic_edit"
-        app:backgroundTint="@color/bgPrimary"
-        app:iconPadding="8dp"
-        app:iconGravity="textStart"
         android:text="Modifier"
-        style="@style/Widget.MaterialComponents.Button.UnelevatedButton"
-        app:fabSize="normal"/>
+        app:backgroundTint="@color/bgPrimary"
+        style="@style/Widget.MaterialComponents.Button.Icon"/>
 
-</FrameLayout>
+</RelativeLayout>
