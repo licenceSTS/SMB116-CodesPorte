@@ -1,12 +1,18 @@
 package fr.sts.codesporte;
 
+import java.util.List;
+
 public class GareItem {
     private String name;
-    private int codeCount;
+    private List<CodeItem> codes;
+    private double longitude;
+    private double latitude;
 
-    public GareItem(String name, int codeCount) {
+    public GareItem(String name, List<CodeItem> codes, double longitude, double latitude) {
         this.name = name;
-        this.codeCount = codeCount;
+        this.codes = codes;
+        this.longitude = longitude;
+        this.latitude = latitude;
     }
 
     public String getName() {
@@ -14,7 +20,18 @@ public class GareItem {
     }
 
     public int getCodeCount() {
-        return codeCount;
+        return codes.size();
+    }
+
+    public double getLongitude() {
+        return longitude;
+    }
+
+    public double getLatitude() {
+        return latitude;
+    }
+
+    public List<CodeItem> getCodes() {
+        return codes;
     }
 }
-

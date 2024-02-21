@@ -4,4 +4,6 @@
     <color name="white">#FFFFFFFF</color>
     <color name="bgPrimary">#009688</color>
     <color name="redForCancelButton">#FF5733</color>
+    <color name="red">#FF5733</color>
+    <color name="orange">#FFA500</color>
 </resources>
