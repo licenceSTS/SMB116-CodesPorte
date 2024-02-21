@@ -47,15 +47,27 @@
     </LinearLayout>
 
     <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
-        android:id="@+id/modifsave_button"
+        android:id="@+id/modifsavegare_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="16dp"
         android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
+        android:layout_alignParentStart="true"
         app:icon="@drawable/ic_add"
         android:text="Ajouter la gare"
         app:backgroundTint="@color/bgPrimary"
+        style="@style/Widget.MaterialComponents.Button.Icon"/>
+
+    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+        android:id="@+id/modifsaveannuler_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        app:icon="@drawable/ic_add"
+        android:text="Annuler"
+        app:backgroundTint="@color/redForCancelButton"
         style="@style/Widget.MaterialComponents.Button.Icon"/>
 
 </RelativeLayout>
