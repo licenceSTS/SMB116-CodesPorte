@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "493765907551",
+    "project_id": "smb116-413108",
+    "storage_bucket": "smb116-413108.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:493765907551:android:0be93ffeee4c135cd6b7ea",
+        "android_client_info": {
+          "package_name": "fr.caensup.lsts"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAnmHnF3jQyGL7k68eI1lGultMEIRG7HRY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -24,9 +24,9 @@ public class CodeAccessActivity extends Activity {
 
         // Remplissage des champs avec les données
         editTextPorteName.setText(namePorte);
-        editTextCode.setText(codePorte);
-        editTextLongitude.setText(longitudePorte);
-        editTextLatitude.setText(latitudePorte);
+        //editTextCode.setText(codePorte);
+        //editTextLongitude.setText(longitudePorte);
+        //editTextLatitude.setText(latitudePorte);
     }
 
     MaterialButton modifsaveButton = findViewById(R.id.modifsave_button);
