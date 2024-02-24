@@ -19,11 +19,17 @@ public class ListeCodeActivity extends AppCompatActivity {
         recyclerView = findViewById(R.id.list_code);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
+        // Récupérez la position de la gare sélectionnée
         int position = getIntent().getIntExtra("position", -1);
         if (position != -1) {
-            List<CodeItem> codes = MainActivity.getGareList().get(position).getCodes();
+            // Obtenez la gare sélectionnée à partir de la liste des gares dans MainActivity
+            GareItem selectedGare = MainActivity.getGareList().get(position);
+            // Obtenez les codes (portes) associés à la gare sélectionnée
+            List<CodeItem> codes = selectedGare.getCodes();
+            // Initialisez l'adaptateur avec la liste des codes et associez-le au RecyclerView
             codeAdapter = new CodeAdapter(codes);
             recyclerView.setAdapter(codeAdapter);
         }
     }
+
 }

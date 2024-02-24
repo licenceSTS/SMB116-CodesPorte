@@ -18,15 +18,12 @@
         android:textSize="18sp"
         android:textStyle="bold" />
 
-    <EditText
+    <SearchView
         android:id="@+id/search_code"
         android:layout_width="match_parent"
         android:layout_height="60dp"
         android:layout_below="@id/titreListCode"
-        android:autofillHints="textCapSentences"
-        android:hint="@string/search_code"
-        android:inputType="text"
-        tools:ignore="MissingConstraints" />
+        android:queryHint="@string/search_code" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/list_code"

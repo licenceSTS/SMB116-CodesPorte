@@ -13,6 +13,7 @@
         android:padding="16dp">
 
         <TextView
+            android:id="@+id/textViewTitreAddModifGare"
             android:layout_width="match_parent"
             android:layout_height="40dp"
             android:gravity="center"
@@ -24,20 +25,26 @@
         <EditText
             android:id="@+id/editTextGare"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Nom de la gare"/>
+            android:layout_height="60dp"
+            android:hint="@string/nom_de_la_gare"
+            android:autofillHints=""
+            android:inputType="text" />
 
         <EditText
             android:id="@+id/editTextLongitude"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Longitude"/>
+            android:layout_height="60dp"
+            android:hint="@string/longitude"
+            android:autofillHints=""
+            android:inputType="numberDecimal" />
 
         <EditText
             android:id="@+id/editTextLatitude"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Latitude"/>
+            android:layout_height="60dp"
+            android:hint="@string/latitude"
+            android:autofillHints=""
+            android:inputType="numberDecimal" />
 
         <!-- Ici, ajoutez votre MapView pour Google Maps -->
         <com.google.android.gms.maps.MapView
@@ -50,26 +57,35 @@
 
     <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
         android:id="@+id/modifsavegare_button"
+        style="@style/Widget.MaterialComponents.Button.Icon"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="16dp"
-        android:layout_alignParentBottom="true"
         android:layout_alignParentStart="true"
-        app:icon="@drawable/ic_add"
-        android:text="Ajouter la gare"
+        android:layout_alignParentBottom="true"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="16dp"
+        android:text="@string/add_gare"
         app:backgroundTint="@color/bgPrimary"
-        style="@style/Widget.MaterialComponents.Button.Icon"/>
+        app:icon="@drawable/ic_add"
+        android:onClick="ajoutermodifier"/>
 
     <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
         android:id="@+id/modifsaveannuler_button"
+        style="@style/Widget.MaterialComponents.Button.Icon"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="16dp"
-        android:layout_alignParentBottom="true"
         android:layout_alignParentEnd="true"
-        app:icon="@drawable/ic_add"
-        android:text="Annuler"
+        android:layout_alignParentBottom="true"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="16dp"
+        android:text="@string/btn_annuler"
         app:backgroundTint="@color/redForCancelButton"
-        style="@style/Widget.MaterialComponents.Button.Icon"/>
+        app:icon="@drawable/ic_cancel"
+        tools:ignore="RelativeOverlap"
+        android:onClick="annuler"/>
 
 </RelativeLayout>

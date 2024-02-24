@@ -18,15 +18,12 @@
         android:textSize="18sp"
         android:textStyle="bold"/>
 
-    <EditText
+    <SearchView
         android:id="@+id/search_gare"
         android:layout_width="match_parent"
         android:layout_height="60dp"
         android:layout_below="@id/titreListGare"
-        android:hint="@string/search_gare"
-        android:inputType="text"
-        android:autofillHints="textCapSentences"
-        tools:ignore="MissingConstraints" />
+        android:queryHint="@string/search_gare" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/list_gare"
@@ -47,5 +44,6 @@
         android:src="@drawable/ic_add"
         app:backgroundTint="@color/bgPrimary"
         app:tint="@android:color/white"
+        android:contentDescription="@string/titre_addgare"
         app:fabSize="normal"/>
 </RelativeLayout >

@@ -4,34 +4,26 @@ import java.util.List;
 
 public class GareItem {
     private String name;
-    private List<CodeItem> codes;
-    private double longitude;
+    private List<CodeItem> codes; // Liste pour stocker les portes
     private double latitude;
+    private double longitude;
 
-    public GareItem(String name, List<CodeItem> codes, double longitude, double latitude) {
+    // Constructeur
+    public GareItem(String name, List<CodeItem> codes, double latitude, double longitude) {
         this.name = name;
-        this.codes = codes;
-        this.longitude = longitude;
+        this.codes = codes; // Initialisez la liste des codes ici
         this.latitude = latitude;
+        this.longitude = longitude;
     }
 
-    public String getName() {
-        return name;
-    }
+    // Getters et Setters
+    public String getName() { return name; }
+    public List<CodeItem> getCodes() { return codes; }
+    public double getLatitude() { return latitude; }
+    public double getLongitude() { return longitude; }
 
-    public int getCodeCount() {
-        return codes.size();
-    }
-
-    public double getLongitude() {
-        return longitude;
-    }
-
-    public double getLatitude() {
-        return latitude;
-    }
-
-    public List<CodeItem> getCodes() {
-        return codes;
+    // Vous pourriez également ajouter des méthodes pour ajouter ou supprimer des codes
+    public void addCode(CodeItem code) {
+        this.codes.add(code);
     }
 }

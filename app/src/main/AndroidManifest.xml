@@ -10,8 +10,7 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.CodesPorte"
-        tools:targetApi="31">
+        android:theme="@style/Theme.CodesPorte">
         <activity
             android:name=".MainActivity"
             android:exported="true">
@@ -20,6 +19,18 @@
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+        </activity>
+        <activity
+            android:name=".ListeCodeActivity"
+            android:exported="false">
+        </activity>
+        <activity
+            android:name=".AddGareActivity"
+            android:exported="false">
+        </activity>
+        <activity
+            android:name=".CodeAccessActivity"
+            android:exported="false">
         </activity>
     </application>
 

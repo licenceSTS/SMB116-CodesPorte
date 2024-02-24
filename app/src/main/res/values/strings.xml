@@ -6,4 +6,12 @@
     <string name="search_code">Rechercher un code...</string>
     <string name="titre_addgare">Ajouter une gare</string>
     <string name="titre_addcode">Ajouter un code</string>
+    <string name="itemPorte">Description de la porte</string>
+    <string name="action_no">Non</string>
+    <string name="action_yes">Oui</string>
+    <string name="btn_annuler">Annuler</string>
+    <string name="add_gare">Ajouter la gare</string>
+    <string name="nom_de_la_gare">Nom de la gare</string>
+    <string name="longitude">Longitude</string>
+    <string name="latitude">Latitude</string>
 </resources>
