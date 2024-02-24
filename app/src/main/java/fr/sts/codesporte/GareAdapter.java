@@ -28,8 +28,8 @@ public class GareAdapter extends RecyclerView.Adapter<GareAdapter.GareViewHolder
     @Override
     public void onBindViewHolder(@NonNull GareViewHolder holder, int position) {
         GareItem currentItem = gareList.get(position);
-        holder.gareName.setText(currentItem.getName());
-        holder.gareCodeCount.setText("Nombre de codes: " + currentItem.getCodes().size());
+        holder.gareName.setText(currentItem.getNom());
+        holder.gareCodeCount.setText("Nombre de codes: " + currentItem.getPorteList().size());
     }
 
     @Override

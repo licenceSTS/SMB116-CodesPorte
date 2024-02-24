@@ -39,7 +39,7 @@ public class AddGareActivity extends Activity {
     }
 
     private void displayGareItem(GareItem gareItem) {
-        gareNameEditText.setText(gareItem.getName());
+        gareNameEditText.setText(gareItem.getNom());
         longitudeEditText.setText(String.valueOf(gareItem.getLongitude()));
         latitudeEditText.setText(String.valueOf(gareItem.getLatitude()));
     }

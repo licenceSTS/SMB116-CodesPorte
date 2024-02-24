@@ -3,26 +3,49 @@ package fr.sts.codesporte;
 import java.util.List;
 
 public class GareItem {
-    private final String name;
-    private final List<CodeItem> codes; // Liste pour stocker les portes
-    private final double latitude;
-    private final double longitude;
+    private String nom;
+    private List<PorteItem> porteList; // Liste des portes associées à la gare
+    private double longitude;
+    private double latitude;
 
-    // Constructeur
-    public GareItem(String name, List<CodeItem> codes, double latitude, double longitude) {
-        this.name = name;
-        this.codes = codes;
-        this.latitude = latitude;
+    // Constructeur de GareItem
+    public GareItem(String nom, List<PorteItem> porteList, double longitude, double latitude) {
+        this.nom = nom;
+        this.porteList = porteList;
         this.longitude = longitude;
+        this.latitude = latitude;
     }
 
     // Getters et Setters
-    public String getName() { return name; }
-    public List<CodeItem> getCodes() { return codes; }
-    public double getLatitude() { return latitude; }
-    public double getLongitude() { return longitude; }
+    public String getNom() {
+        return nom;
+    }
 
-    public void addCode(CodeItem code) {
-        this.codes.add(code);
+    public void setNom(String nom) {
+        this.nom = nom;
+    }
+
+    public List<PorteItem> getPorteList() {
+        return porteList;
+    }
+
+    public void setPorteList(List<PorteItem> porteList) {
+        this.porteList = porteList;
+    }
+
+    public double getLongitude() {
+        return longitude;
+    }
+
+    public void setLongitude(double longitude) {
+        this.longitude = longitude;
+    }
+
+    public double getLatitude() {
+        return latitude;
+    }
+
+    public void setLatitude(double latitude) {
+        this.latitude = latitude;
     }
 }
