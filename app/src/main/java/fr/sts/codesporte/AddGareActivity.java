@@ -44,13 +44,13 @@ public class AddGareActivity extends Activity {
         latitudeEditText.setText(String.valueOf(gareItem.getLatitude()));
     }
 
-    public void ajoutermodifier(View view) {
+    public void ajouterModifier(View view) {
         String name = gareNameEditText.getText().toString();
         double longitude = Double.parseDouble(longitudeEditText.getText().toString());
         double latitude = Double.parseDouble(latitudeEditText.getText().toString());
     }
 
-    public void annuler(View view) {
+    public void annulerRetour(View view) {
         finish();
     }
 }

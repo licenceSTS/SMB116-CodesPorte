@@ -1,5 +1,6 @@
 package fr.sts.codesporte;
 
+import android.annotation.SuppressLint;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,7 +10,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import java.util.List;
 
 public class GareAdapter extends RecyclerView.Adapter<GareAdapter.GareViewHolder> {
-    private List<GareItem> gareList;
+    private final List<GareItem> gareList;
     private OnItemClickListener listener;
 
     public GareAdapter(List<GareItem> gareList) {
@@ -23,11 +24,12 @@ public class GareAdapter extends RecyclerView.Adapter<GareAdapter.GareViewHolder
         return new GareViewHolder(itemView, listener);
     }
 
+    @SuppressLint("SetTextI18n")
     @Override
     public void onBindViewHolder(@NonNull GareViewHolder holder, int position) {
         GareItem currentItem = gareList.get(position);
         holder.gareName.setText(currentItem.getName());
-        holder.gareCodeCount.setText("Nombre de codes: " + currentItem.getCodes().size()); // Assume getCodes() returns List<CodeItem>
+        holder.gareCodeCount.setText("Nombre de codes: " + currentItem.getCodes().size());
     }
 
     @Override

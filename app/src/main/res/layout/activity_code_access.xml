@@ -16,7 +16,7 @@
             android:layout_width="match_parent"
             android:layout_height="40dp"
             android:gravity="center"
-            android:text="Gare Nom"
+            android:text="@string/gare_nom"
             android:textSize="18sp"
             android:textStyle="bold"/>
 
@@ -24,25 +24,33 @@
             android:id="@+id/editTextPorte"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Description de la porte"/>
+            android:hint="@string/description_de_la_porte"
+            android:autofillHints="name"
+            android:inputType="textAutoCorrect"/>
 
         <EditText
             android:id="@+id/editTextCode"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Code"/>
+            android:hint="@string/code"
+            android:autofillHints="password"
+            android:inputType="numberDecimal"/>
 
         <EditText
             android:id="@+id/editTextLongitude"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Longitude"/>
+            android:hint="@string/longitude"
+            android:autofillHints=""
+            android:inputType="numberDecimal" />
 
         <EditText
             android:id="@+id/editTextLatitude"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Latitude"/>
+            android:hint="@string/latitude"
+            android:autofillHints=""
+            android:inputType="numberDecimal" />
 
         <!-- Ici, ajoutez votre MapView pour Google Maps -->
         <com.google.android.gms.maps.MapView
@@ -61,20 +69,23 @@
         android:layout_alignParentBottom="true"
         android:layout_alignParentStart="true"
         app:icon="@drawable/ic_edit"
-        android:text="Modifier"
+        android:text="@string/modifier"
         app:backgroundTint="@color/bgPrimary"
         style="@style/Widget.MaterialComponents.Button.Icon"/>
 
     <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
         android:id="@+id/modifsaveannuler_button"
+        style="@style/Widget.MaterialComponents.Button.Icon"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="16dp"
-        android:layout_alignParentBottom="true"
         android:layout_alignParentEnd="true"
-        app:icon="@drawable/ic_add"
-        android:text="Annuler"
+        android:layout_alignParentBottom="true"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="16dp"
+        android:text="@string/annulerRetour"
         app:backgroundTint="@color/redForCancelButton"
-        style="@style/Widget.MaterialComponents.Button.Icon"/>
+        app:icon="@drawable/ic_add" />
 
 </RelativeLayout>
