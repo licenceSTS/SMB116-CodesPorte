@@ -19,4 +19,8 @@
     <string name="code">Code</string>
     <string name="description_de_la_porte">Description de la porte</string>
     <string name="gare_nom">Nom Gare</string>
+    <string name="retour_la_liste_des_gares">Retour à la liste des gares</string>
+    <string name="retour_aux_gares">Retour aux gares</string>
+    <string name="ajouter_une_porte">Ajouter une porte</string>
+    <string name="no_result">Aucun résultat</string>
 </resources>

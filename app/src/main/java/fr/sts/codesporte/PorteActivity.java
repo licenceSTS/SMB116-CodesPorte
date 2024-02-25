@@ -1,5 +1,6 @@
 package fr.sts.codesporte;
 
+import android.annotation.SuppressLint;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.drawable.Drawable;
@@ -14,22 +15,24 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import android.content.Intent;
 import android.view.View;
+import android.widget.Button;
 import android.widget.SearchView;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class PorteActivity extends AppCompatActivity {
-    private List<PorteItem> listePorte = new ArrayList<>();
-    private List<PorteItem> filteredListePorte = new ArrayList<>();
+    private final List<PorteItem> listePorte = new ArrayList<>();
+    private final List<PorteItem> filteredListePorte = new ArrayList<>();
     private PorteAdapter porteAdapter;
     private SearchView searchView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_portes); // Assurez-vous d'avoir un layout correspondant
+        setContentView(R.layout.activity_portes);
 
+        Button backButton = findViewById(R.id.back_button);
         RecyclerView recyclerView = findViewById(R.id.list_code); // Assurez-vous que l'ID correspond à celui dans votre layout XML
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
@@ -47,7 +50,14 @@ public class PorteActivity extends AppCompatActivity {
             // Ici, vous pouvez gérer le clic sur un élément, par exemple afficher les détails de la porte
         });
 
-        searchView = findViewById(R.id.search_code); // Assurez-vous que l'ID correspond
+        backButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                finish();
+            }
+        });
+
+        searchView = findViewById(R.id.search_code);
         setupSearchView();
     }
 
@@ -162,6 +172,7 @@ public class PorteActivity extends AppCompatActivity {
                 return false;
             }
 
+            @SuppressLint("NotifyDataSetChanged")
             @Override
             public boolean onQueryTextChange(String newText) {
                 filteredListePorte.clear();

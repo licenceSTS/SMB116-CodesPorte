@@ -25,6 +25,18 @@
         android:layout_below="@id/titreListGare"
         android:queryHint="@string/search_gare" />
 
+    <TextView
+        android:id="@+id/tvNoResult"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/no_result"
+        android:gravity="center"
+        android:visibility="gone"
+        android:layout_centerInParent="true"
+        android:textSize="18sp"
+        android:textColor="#757575" />
+
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/list_gare"
         android:layout_width="match_parent"

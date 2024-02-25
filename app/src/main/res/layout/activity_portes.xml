@@ -25,6 +25,17 @@
         android:layout_below="@id/titreListCode"
         android:queryHint="@string/search_code" />
 
+    <TextView
+        android:id="@+id/tvNoResult"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/no_result"
+        android:gravity="center"
+        android:visibility="gone"
+        android:layout_centerInParent="true"
+        android:textSize="18sp"
+        android:textColor="#757575" />
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/list_code"
         android:layout_width="match_parent"
@@ -36,16 +47,19 @@
 
     <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
         android:id="@+id/back_button"
+        style="@style/Widget.MaterialComponents.Button.Icon"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="16dp"
-        android:layout_alignParentBottom="true"
         android:layout_alignParentStart="true"
-        app:icon="@drawable/ic_back"
-        android:text="Retour aux gares"
-        android:contentDescription="Retour à la liste des gares"
+        android:layout_alignParentBottom="true"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="16dp"
+        android:contentDescription="@string/retour_la_liste_des_gares"
+        android:text="@string/retour_aux_gares"
         app:backgroundTint="@color/bgPrimary"
-        style="@style/Widget.MaterialComponents.Button.Icon"/>
+        app:icon="@drawable/ic_back" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/add_codeporte"
@@ -57,5 +71,7 @@
         android:src="@drawable/ic_add"
         app:backgroundTint="@color/bgPrimary"
         app:tint="@android:color/white"
-        app:fabSize="normal"/>
+        app:fabSize="normal"
+        android:contentDescription="@string/ajouter_une_porte"
+        tools:ignore="RelativeOverlap" />
 </RelativeLayout >

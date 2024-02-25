@@ -52,14 +52,43 @@ public class GareAdapter extends RecyclerView.Adapter<GareAdapter.GareViewHolder
 
             itemView.setOnClickListener(v -> {
                 int position = getBindingAdapterPosition();
-                if (position != RecyclerView.NO_POSITION) {
+                if (position != RecyclerView.NO_POSITION && listener != null) {
                     listener.onItemClick(position);
                 }
             });
         }
     }
 
+    @SuppressLint("NotifyDataSetChanged")
+    public void updateGareList(List<GareItem> newGareList) {
+        gareList.clear();
+        gareList.addAll(newGareList);
+        notifyDataSetChanged();
+    }
+
     public interface OnItemClickListener {
         void onItemClick(int position);
+    }
+
+    // Ajoute une nouvelle gare à la liste
+    public void addGare(GareItem newGare) {
+        gareList.add(newGare);
+        notifyItemInserted(gareList.size() - 1);
+    }
+
+    // Supprime une gare de la liste
+    public void removeGare(int position) {
+        if (position >= 0 && position < gareList.size()) {
+            gareList.remove(position);
+            notifyItemRemoved(position);
+        }
+    }
+
+    // Met à jour une gare existante
+    public void updateGare(int position, GareItem updatedGare) {
+        if (position >= 0 && position < gareList.size()) {
+            gareList.set(position, updatedGare);
+            notifyItemChanged(position);
+        }
     }
 }

@@ -16,6 +16,9 @@ import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.SearchView;
+import android.widget.TextView;
+
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,6 +30,7 @@ public class MainActivity extends AppCompatActivity {
     private final List<GareItem> filteredGareList = new ArrayList<>();
     private GareAdapter gareAdapter;
     private SearchView searchView;
+    public static final int ADD_GARE_REQUEST = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,6 +38,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         RecyclerView recyclerView = findViewById(R.id.list_gare);
+        FloatingActionButton addButton = findViewById(R.id.add_gare);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         initGareList(); // Initialise la liste des gares
 
@@ -47,6 +52,13 @@ public class MainActivity extends AppCompatActivity {
             Intent intent = new Intent(MainActivity.this, PorteActivity.class);
             intent.putExtra("position", position);
             startActivity(intent);
+        });
+
+        addButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                addGare(view);
+            }
         });
 
         searchView = findViewById(R.id.search_gare);
@@ -92,6 +104,15 @@ public class MainActivity extends AppCompatActivity {
                     filteredGareList.addAll(filtered);
                 }
                 gareAdapter.notifyDataSetChanged();
+
+                // Afficher ou cacher le TextView basé sur la taille de filteredGareList
+                TextView tvNoResult = findViewById(R.id.tvNoResult);
+                if (filteredGareList.isEmpty()) {
+                    tvNoResult.setVisibility(View.VISIBLE);
+                } else {
+                    tvNoResult.setVisibility(View.GONE);
+                }
+
                 return false;
             }
         });
@@ -116,6 +137,11 @@ public class MainActivity extends AppCompatActivity {
                     } else if (direction == ItemTouchHelper.RIGHT) {
                         modifyGare(actualPosition);
                     }
+                    // Réinitialisation manuelle de la vue
+                    viewHolder.itemView.setTranslationX(0);
+
+                    // Si nécessaire, notifiez l'adaptateur du changement
+                    gareAdapter.notifyItemChanged(position);
                 }
             }
 
@@ -166,28 +192,35 @@ public class MainActivity extends AppCompatActivity {
         itemTouchHelper.attachToRecyclerView(recyclerView);
     }
 
-    private void showDeleteConfirmationDialog(final int position) {
+    private void showDeleteConfirmationDialog(final int actualPosition) {
         new AlertDialog.Builder(this)
-            .setTitle("Suppression")
-            .setMessage("Voulez-vous vraiment supprimer cet gare ?")
-            .setPositiveButton(R.string.action_yes, (dialog, which) -> {
-                // Suppression confirmée
-                deleteGare(position);
-            })
-            .setNegativeButton(R.string.action_no, (dialog, which) -> {
-                // Annulation de la suppression, restaurez la vue
-                gareAdapter.notifyItemChanged(position);
-            })
-            .setIcon(android.R.drawable.ic_dialog_alert)
-            .show();
+                .setTitle("Suppression")
+                .setMessage("Voulez-vous vraiment supprimer cet gare ?")
+                .setPositiveButton(R.string.action_yes, (dialog, which) -> deleteGare(actualPosition))
+                .setNegativeButton(R.string.action_no, (dialog, which) -> gareAdapter.notifyItemChanged(actualPosition)) // Réinitialise l'état visuel de l'item
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .show();
     }
 
-    private void deleteGare(int position) {
-        // Supprimez l'élément de la liste
-        gareList.remove(position);
-        // Notifiez l'adaptateur du changement
-        gareAdapter.notifyItemRemoved(position);
-        gareAdapter.notifyItemRangeChanged(position, gareList.size());
+    private void deleteGare(int actualPosition) {
+        if (actualPosition >= 0 && actualPosition < gareList.size()) {
+            // Supprime de la liste principale
+            gareList.remove(actualPosition);
+
+            // Mise à jour et filtrage de la liste affichée si nécessaire
+            updateFilteredGareList();
+
+            // Inutile d'appeler notifyItemRemoved et notifyItemRangeChanged en même temps
+            gareAdapter.notifyDataSetChanged(); // Ceci est suffisant pour rafraîchir la vue
+        }
+    }
+
+    private void updateFilteredGareList() {
+        // Met à jour filteredGareList basé sur votre logique de filtrage actuelle
+        // Par exemple, si aucun filtre n'est appliqué, copiez simplement gareList
+        filteredGareList.clear();
+        filteredGareList.addAll(gareList);
+        // Si un filtre est appliqué, refiltrez gareList ici selon vos critères de filtrage
     }
 
     private void modifyGare(int position) {
@@ -198,6 +231,38 @@ public class MainActivity extends AppCompatActivity {
 
     public void addGare(View view) {
         Intent intent = new Intent(this, AddGareActivity.class);
-        startActivity(intent);
+        startActivityForResult(intent, ADD_GARE_REQUEST);
     }
+
+    @SuppressLint("NotifyDataSetChanged")
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == ADD_GARE_REQUEST && resultCode == RESULT_OK) {
+            // Extraction des données de l'intent
+            String nomGare = data.getStringExtra("nomGare");
+            double longitude = data.getDoubleExtra("longitude", 0.0);
+            double latitude = data.getDoubleExtra("latitude", 0.0);
+            int position = data.getIntExtra("position", -1);
+
+            if (position == -1) {
+                // Ajout d'une nouvelle gare
+                GareItem newGare = new GareItem(nomGare, new ArrayList<>(), longitude, latitude);
+                gareList.add(newGare);
+            } else {
+                // Mise à jour d'une gare existante
+                GareItem updatedGare = gareList.get(position);
+                updatedGare.setNom(nomGare);
+                updatedGare.setLongitude(longitude);
+                updatedGare.setLatitude(latitude);
+            }
+
+            // Mise à jour de la liste affichée
+            filteredGareList.clear();
+            filteredGareList.addAll(gareList);
+            gareAdapter.notifyDataSetChanged();
+        }
+    }
+
+
 }
