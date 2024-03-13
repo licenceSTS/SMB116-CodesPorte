@@ -24,6 +24,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import fr.sts.codesporte.repository.GareRepository;
+
 public class MainActivity extends AppCompatActivity {
     // Déclaration de la liste et de l'adaptateur comme variables de la classe
     private static final List<GareItem> gareList = new ArrayList<>();
@@ -37,32 +39,38 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        RecyclerView recyclerView = findViewById(R.id.list_gare);
-        FloatingActionButton addButton = findViewById(R.id.add_gare);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        initGareList(); // Initialise la liste des gares
+        GareRepository gareRepository = new GareRepository();
+        gareRepository.getAllGares().addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                List<GareItem> gares = task.getResult();
+                RecyclerView recyclerView = findViewById(R.id.list_gare);
+                FloatingActionButton addButton = findViewById(R.id.add_gare);
+                recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        filteredGareList.addAll(gareList); // Initialiser avec toutes les gares
-        gareAdapter = new GareAdapter(filteredGareList);
-        recyclerView.setAdapter(gareAdapter);
+                filteredGareList.addAll(gares); // Initialiser avec toutes les gares
+                gareAdapter = new GareAdapter(filteredGareList);
+                recyclerView.setAdapter(gareAdapter);
 
-        setupItemTouchHelper(recyclerView);
+                setupItemTouchHelper(recyclerView);
 
-        gareAdapter.setOnItemClickListener(position -> {
-            Intent intent = new Intent(MainActivity.this, PorteActivity.class);
-            intent.putExtra("position", position);
-            startActivity(intent);
-        });
+                gareAdapter.setOnItemClickListener(position -> {
+                    Intent intent = new Intent(MainActivity.this, PorteActivity.class);
+                    intent.putExtra("position", position);
+                    startActivity(intent);
+                });
 
-        addButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                addGare(view);
+                addButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        addGare(view);
+                    }
+                });
+
+                searchView = findViewById(R.id.search_gare);
+                setupSearchView();
+
             }
         });
-
-        searchView = findViewById(R.id.search_gare);
-        setupSearchView();
     }
 
     private void initGareList() {

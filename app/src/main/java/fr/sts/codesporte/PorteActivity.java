@@ -13,13 +13,19 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
 import android.content.Intent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.SearchView;
+
+import com.google.android.gms.tasks.OnSuccessListener;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import fr.sts.codesporte.repository.GareRepository;
 
 public class PorteActivity extends AppCompatActivity {
     private final List<PorteItem> listePorte = new ArrayList<>();
@@ -32,24 +38,29 @@ public class PorteActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_portes);
 
+        GareRepository gareRepository = new GareRepository();
+
         Button backButton = findViewById(R.id.back_button);
         RecyclerView recyclerView = findViewById(R.id.list_code); // Assurez-vous que l'ID correspond à celui dans votre layout XML
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
         // Supposons que vous récupériez la liste des portes de l'intent
         int positionGare = getIntent().getIntExtra("position", 0);
-        listePorte.addAll(MainActivity.getGareList().get(positionGare).getPorteList());
-        filteredListePorte.addAll(listePorte);
+        gareRepository.getAllGares().addOnSuccessListener(new OnSuccessListener<List<GareItem>>() {
+            @Override
+            public void onSuccess(List<GareItem> gareItems) {
+                listePorte.addAll(gareItems.get(positionGare).getPorteList());
+                System.out.println("Portes: " + listePorte.get(0).getCode());
+                filteredListePorte.addAll(listePorte);
 
-        porteAdapter = new PorteAdapter(filteredListePorte);
-        recyclerView.setAdapter(porteAdapter);
+                porteAdapter = new PorteAdapter(filteredListePorte);
+                recyclerView.setAdapter(porteAdapter);
 
-        setupItemTouchHelper(recyclerView);
-
-        porteAdapter.setOnItemClickListener(position -> {
-            // Ici, vous pouvez gérer le clic sur un élément, par exemple afficher les détails de la porte
+                porteAdapter.setOnItemClickListener(position -> {
+                    // Ici, vous pouvez gérer le clic sur un élément, par exemple afficher les détails de la porte
+                });
+            }
         });
-
         backButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
