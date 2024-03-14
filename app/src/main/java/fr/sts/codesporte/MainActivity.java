@@ -73,21 +73,6 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private void initGareList() {
-        // Créez des listes de codes pour chaque gare
-        List<PorteItem> codesGareDeLyon = new ArrayList<>();
-        codesGareDeLyon.add(new PorteItem("Porte A", "CodeA", 2.374, 48.844)); // Exemple de données
-        codesGareDeLyon.add(new PorteItem("Porte B", "CodeB", 2.375, 48.845));
-
-        List<PorteItem> codesGareDuNord = new ArrayList<>();
-        codesGareDuNord.add(new PorteItem("Porte C", "CodeC", 2.356, 48.876));
-        codesGareDuNord.add(new PorteItem("Porte D", "CodeD", 2.357, 48.877));
-
-        // Ajoutez vos gares initiales ici, avec leurs codes respectifs
-        gareList.add(new GareItem("Gare de Lyon", codesGareDeLyon, 2.323, 48.844));
-        gareList.add(new GareItem("Gare du Nord", codesGareDuNord, 2.356, 48.876));
-    }
-
     public static List<GareItem> getGareList() {
         return gareList;
     }
@@ -242,35 +227,40 @@ public class MainActivity extends AppCompatActivity {
         startActivityForResult(intent, ADD_GARE_REQUEST);
     }
 
-    @SuppressLint("NotifyDataSetChanged")
+    private void updateGareList() {
+        GareRepository gareRepository = new GareRepository();
+        gareRepository.getAllGares().addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                List<GareItem> gares = task.getResult();
+                gareList.clear();
+                gareList.addAll(gares);
+                updateFilteredGareList();
+                gareAdapter.notifyDataSetChanged();
+            }
+        });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        updateGareList();
+    }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+
         if (requestCode == ADD_GARE_REQUEST && resultCode == RESULT_OK) {
-            // Extraction des données de l'intent
-            String nomGare = data.getStringExtra("nomGare");
-            double longitude = data.getDoubleExtra("longitude", 0.0);
-            double latitude = data.getDoubleExtra("latitude", 0.0);
-            int position = data.getIntExtra("position", -1);
-
-            if (position == -1) {
-                // Ajout d'une nouvelle gare
-                GareItem newGare = new GareItem(nomGare, new ArrayList<>(), longitude, latitude);
-                gareList.add(newGare);
-            } else {
-                // Mise à jour d'une gare existante
-                GareItem updatedGare = gareList.get(position);
-                updatedGare.setNom(nomGare);
-                updatedGare.setLongitude(longitude);
-                updatedGare.setLatitude(latitude);
-            }
-
-            // Mise à jour de la liste affichée
-            filteredGareList.clear();
-            filteredGareList.addAll(gareList);
-            gareAdapter.notifyDataSetChanged();
+            GareRepository gareRepository = new GareRepository();
+            gareRepository.getAllGares().addOnCompleteListener(task -> {
+                if (task.isSuccessful()) {
+                    List<GareItem> gares = task.getResult();
+                    gareList.clear();
+                    gareList.addAll(gares);
+                    updateFilteredGareList();
+                    gareAdapter.notifyDataSetChanged();
+                }
+            });
         }
     }
-
-
 }

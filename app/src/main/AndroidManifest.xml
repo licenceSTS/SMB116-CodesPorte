@@ -32,6 +32,7 @@
             android:name=".CodeAccessActivity"
             android:exported="false">
         </activity>
+        <activity android:name=".AddPorteActivity" />
     </application>
 
 </manifest>

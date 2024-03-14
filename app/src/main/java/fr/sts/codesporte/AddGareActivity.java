@@ -10,10 +10,14 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class AddGareActivity extends Activity {
+import fr.sts.codesporte.repository.GareRepository;
+
+public class  AddGareActivity extends Activity {
     private EditText gareNameEditText;
     private EditText longitudeEditText;
     private EditText latitudeEditText;
+
+    private GareRepository gareRepository = new GareRepository();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,27 +47,23 @@ public class AddGareActivity extends Activity {
         String strLongitude = longitudeEditText.getText().toString();
         String strLatitude = latitudeEditText.getText().toString();
 
+
         if (nomGare.isEmpty() || strLongitude.isEmpty() || strLatitude.isEmpty()) {
             Toast.makeText(this, "Veuillez remplir tous les champs", Toast.LENGTH_SHORT).show();
             return;
         }
 
         try {
+
             double longitude = Double.parseDouble(strLongitude);
             double latitude = Double.parseDouble(strLatitude);
             if (longitude < -180 || longitude > 180 || latitude < -90 || latitude > 90) {
                 Toast.makeText(this, "Valeurs de longitude/latitude invalides", Toast.LENGTH_SHORT).show();
                 return;
             }
-
-            Intent data = new Intent();
-            data.putExtra("nomGare", nomGare);
-            data.putExtra("longitude", longitude);
-            data.putExtra("latitude", latitude);
-            int position = getIntent().getIntExtra("position", -1);
-            data.putExtra("position", position);
-
-            setResult(RESULT_OK, data);
+            GareItem gareItem = new GareItem(nomGare, null, longitude, latitude);
+            gareRepository.addGare(gareItem);
+            setResult(RESULT_OK);
             finish();
         } catch (NumberFormatException e) {
             Toast.makeText(this, "Erreur de format dans les coordonnées", Toast.LENGTH_SHORT).show();

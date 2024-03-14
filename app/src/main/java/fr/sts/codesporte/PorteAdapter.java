@@ -26,7 +26,8 @@ public class PorteAdapter extends RecyclerView.Adapter<PorteAdapter.ViewHolder> 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         PorteItem currentItem = porteList.get(position);
-        holder.porteTextView.setText(currentItem.getDescription());
+        holder.porteTextView.setText("Description : " + currentItem.getDescription());
+        holder.codeTextView.setText("Code : " +currentItem.getCode());
     }
 
     @Override
@@ -48,10 +49,12 @@ public class PorteAdapter extends RecyclerView.Adapter<PorteAdapter.ViewHolder> 
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
         TextView porteTextView;
+        TextView codeTextView;
 
         public ViewHolder(View itemView, final OnItemClickListener listener) {
             super(itemView);
             porteTextView = itemView.findViewById(R.id.textViewPorte);
+            codeTextView = itemView.findViewById(R.id.textViewCode);
 
             itemView.setOnClickListener(v -> {
                 int position = getBindingAdapterPosition();

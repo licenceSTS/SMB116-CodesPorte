@@ -38,10 +38,6 @@ public class GareRepository {
                 List<Task<List<PorteItem>>> allPorteTasks = new ArrayList<>(); // Liste des tâches de récupération de portes
 
                 for (QueryDocumentSnapshot documentSnapshot : task.getResult()) {
-                    String nom = documentSnapshot.getString("nom");
-                    double latitude = documentSnapshot.getDouble("latitude");
-                    double longitude = documentSnapshot.getDouble("longitude");
-
                     Task<QuerySnapshot> porteTask = documentSnapshot.getReference().collection("portes").get();
                     Task<List<PorteItem>> mappedPorteTask = porteTask.continueWith(mappedTask -> {
                         List<PorteItem> porteList = new ArrayList<>();
@@ -59,7 +55,6 @@ public class GareRepository {
                         }
                         return porteList;
                     });
-
                     allPorteTasks.add(mappedPorteTask); // Ajoute la tâche à la liste
                 }
 
@@ -72,7 +67,7 @@ public class GareRepository {
                         double latitude = documentSnapshot.getDouble("latitude");
                         double longitude = documentSnapshot.getDouble("longitude");
                         List<PorteItem> porteList = (List<PorteItem>) allPorteResults.get(i);
-                        GareItem gare = new GareItem(nom, porteList, latitude, longitude);
+                        GareItem gare = new GareItem(documentSnapshot.getId() ,nom, porteList, latitude, longitude);
                         gares.add(gare);
                     }
                     return gares;
@@ -95,7 +90,7 @@ public class GareRepository {
     public void addGare(GareItem gare) {
         // Ajouter une gare à la collection "gares"
         garesCollection.add(gare)
-                .addOnSuccessListener(documentReference -> Log.d(TAG, "Gare ajoutée avec l'ID: " + documentReference.getId()))
+                .addOnSuccessListener(documentReference -> System.out.println("Gare ajoutée avec l'ID: " + documentReference.getId()))
                 .addOnFailureListener(e -> Log.e(TAG, "Erreur lors de l'ajout de la gare", e));
     }
 

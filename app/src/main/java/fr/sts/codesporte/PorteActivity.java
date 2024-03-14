@@ -20,27 +20,31 @@ import android.widget.Button;
 import android.widget.SearchView;
 
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import fr.sts.codesporte.repository.GareRepository;
+import fr.sts.codesporte.repository.PorteRepository;
 
 public class PorteActivity extends AppCompatActivity {
     private final List<PorteItem> listePorte = new ArrayList<>();
     private final List<PorteItem> filteredListePorte = new ArrayList<>();
     private PorteAdapter porteAdapter;
     private SearchView searchView;
+    private GareRepository gareRepository = new GareRepository();
+
+    private static final int ADD_PORTE_REQUEST = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_portes);
 
-        GareRepository gareRepository = new GareRepository();
-
         Button backButton = findViewById(R.id.back_button);
+        FloatingActionButton addButton = findViewById(R.id.add_codeporte);
         RecyclerView recyclerView = findViewById(R.id.list_code); // Assurez-vous que l'ID correspond à celui dans votre layout XML
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
@@ -49,13 +53,13 @@ public class PorteActivity extends AppCompatActivity {
         gareRepository.getAllGares().addOnSuccessListener(new OnSuccessListener<List<GareItem>>() {
             @Override
             public void onSuccess(List<GareItem> gareItems) {
-                listePorte.addAll(gareItems.get(positionGare).getPorteList());
-                System.out.println("Portes: " + listePorte.get(0).getCode());
-                filteredListePorte.addAll(listePorte);
-
+                List<PorteItem> portes = gareItems.get(positionGare).getPorteList();
+                if (portes != null && !portes.isEmpty()) {
+                    listePorte.addAll(portes);
+                    filteredListePorte.addAll(listePorte);
+                }
                 porteAdapter = new PorteAdapter(filteredListePorte);
                 recyclerView.setAdapter(porteAdapter);
-
                 porteAdapter.setOnItemClickListener(position -> {
                     // Ici, vous pouvez gérer le clic sur un élément, par exemple afficher les détails de la porte
                 });
@@ -64,9 +68,20 @@ public class PorteActivity extends AppCompatActivity {
         backButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                Intent resultIntent = new Intent();
+                setResult(RESULT_OK, resultIntent);
                 finish();
             }
         });
+
+        addButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                addPorte(view);
+            }
+        });
+
+
 
         searchView = findViewById(R.id.search_code);
         setupSearchView();
@@ -172,8 +187,40 @@ public class PorteActivity extends AppCompatActivity {
     }
 
     public void addPorte(View view) {
-        Intent intent = new Intent(this, AddGareActivity.class);
-        startActivity(intent);
+        Intent intent = new Intent(this, AddPorteActivity.class);
+        int positionGare = getIntent().getIntExtra("position", 0);
+        gareRepository.getAllGares().addOnSuccessListener(new OnSuccessListener<List<GareItem>>() {
+            @Override
+            public void onSuccess(List<GareItem> gareItems) {
+                intent.putExtra("idGare", gareItems.get(positionGare).getId());
+                startActivityForResult(intent, ADD_PORTE_REQUEST);
+            }
+        });
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == ADD_PORTE_REQUEST && resultCode == RESULT_OK) {
+            int positionGare = getIntent().getIntExtra("position", 0);
+            gareRepository.getAllGares().addOnSuccessListener(new OnSuccessListener<List<GareItem>>() {
+                @Override
+                public void onSuccess(List<GareItem> gareItems) {
+                    PorteRepository porteRepository = new PorteRepository(gareItems.get(positionGare).getId());
+                    porteRepository.getAllPortes().addOnSuccessListener(
+                            porteItems -> {
+                                System.out.println("Portes: " + porteItems.size());
+                                listePorte.clear();
+                                listePorte.addAll(porteItems);
+                                filteredListePorte.clear();
+                                filteredListePorte.addAll(listePorte);
+                                porteAdapter.notifyDataSetChanged();
+                            }
+                    );
+                }
+            });
+
+        }
     }
 
     private void setupSearchView() {
