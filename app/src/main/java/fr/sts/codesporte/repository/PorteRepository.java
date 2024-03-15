@@ -28,11 +28,12 @@ public class PorteRepository {
             if (task.isSuccessful()) {
                 List<PorteItem> portes = new ArrayList<>();
                 for (DocumentSnapshot documentSnapshot : task.getResult()) {
+                    String id = documentSnapshot.getId();
                     String code = documentSnapshot.getString("code");
                     String description = documentSnapshot.getString("description");
                     double latitude = documentSnapshot.getDouble("latitude");
                     double longitude = documentSnapshot.getDouble("longitude");
-                    PorteItem porte = new PorteItem(code, description, latitude, longitude);
+                    PorteItem porte = new PorteItem(id,code, description, latitude, longitude);
                     portes.add(porte);
                 }
                 return Tasks.forResult(portes);

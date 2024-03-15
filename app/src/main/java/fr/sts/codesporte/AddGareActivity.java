@@ -62,9 +62,17 @@ public class  AddGareActivity extends Activity {
                 return;
             }
             GareItem gareItem = new GareItem(nomGare, null, longitude, latitude);
-            gareRepository.addGare(gareItem);
-            setResult(RESULT_OK);
-            finish();
+            int position = getIntent().getIntExtra("position", -1);
+            if (position != -1) {
+                // Mode modification
+                gareRepository.editGare(MainActivity.getGareList().get(position).getId(), gareItem);
+                setResult(RESULT_OK);
+                finish();
+            }else{
+                gareRepository.addGare(gareItem);
+                setResult(RESULT_OK);
+                finish();
+            }
         } catch (NumberFormatException e) {
             Toast.makeText(this, "Erreur de format dans les coordonnées", Toast.LENGTH_SHORT).show();
         }

@@ -46,7 +46,7 @@ public class AddPorteActivity extends AppCompatActivity {
                 }
                 double longitude = Double.parseDouble(strLongitude);
                 double lat = Double.parseDouble(latitude);
-                PorteItem porteItem = new PorteItem(code, description, longitude, lat);
+                PorteItem porteItem = new PorteItem(description,code, longitude, lat);
                 PorteRepository porteRepository = new PorteRepository(getIntent().getStringExtra("idGare"));
                 porteRepository.addPorte(porteItem);
                 setResult(RESULT_OK);

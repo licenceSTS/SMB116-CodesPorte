@@ -18,7 +18,14 @@ import android.view.View;
 import android.widget.SearchView;
 import android.widget.TextView;
 
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.MapFragment;
+import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.gms.maps.OnMapReadyCallback;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,7 +33,7 @@ import java.util.stream.Collectors;
 
 import fr.sts.codesporte.repository.GareRepository;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements OnMapReadyCallback {
     // Déclaration de la liste et de l'adaptateur comme variables de la classe
     private static final List<GareItem> gareList = new ArrayList<>();
     private final List<GareItem> filteredGareList = new ArrayList<>();
@@ -34,12 +41,15 @@ public class MainActivity extends AppCompatActivity {
     private SearchView searchView;
     public static final int ADD_GARE_REQUEST = 1;
 
+    private GoogleMap mMap;
+
+    private GareRepository gareRepository = new GareRepository();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        GareRepository gareRepository = new GareRepository();
         gareRepository.getAllGares().addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
                 List<GareItem> gares = task.getResult();
@@ -69,6 +79,27 @@ public class MainActivity extends AppCompatActivity {
                 searchView = findViewById(R.id.search_gare);
                 setupSearchView();
 
+            }
+        });
+
+        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
+        mapFragment.getMapAsync(this);
+    }
+
+
+    @Override
+    public void onMapReady(GoogleMap googleMap) {
+        mMap = googleMap;
+        // Add a marker in Sydney, Australia, and move the camera.
+        mMap.clear();
+        gareRepository.getAllGares().addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                List<GareItem> gares = task.getResult();
+                for (GareItem gare : gares) {
+                    LatLng latLng = new LatLng(gare.getLatitude(), gare.getLongitude());
+                    mMap.addMarker(new MarkerOptions().position(latLng).title(gare.getNom()));
+                    mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
+                }
             }
         });
     }
@@ -199,6 +230,7 @@ public class MainActivity extends AppCompatActivity {
         if (actualPosition >= 0 && actualPosition < gareList.size()) {
             // Supprime de la liste principale
             gareList.remove(actualPosition);
+            gareRepository.deleteGare(filteredGareList.get(actualPosition).getId());
 
             // Mise à jour et filtrage de la liste affichée si nécessaire
             updateFilteredGareList();
@@ -244,6 +276,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         updateGareList();
+        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
+        mapFragment.getMapAsync(this);
     }
 
     @Override

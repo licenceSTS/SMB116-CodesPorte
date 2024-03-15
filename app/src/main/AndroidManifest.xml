@@ -33,6 +33,9 @@
             android:exported="false">
         </activity>
         <activity android:name=".AddPorteActivity" />
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyD_NvZdI_uwHspmZpzOtRrU52rkfPfp_Hw"/>
     </application>
 
 </manifest>

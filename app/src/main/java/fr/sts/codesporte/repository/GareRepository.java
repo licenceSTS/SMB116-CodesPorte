@@ -27,6 +27,8 @@ public class GareRepository {
     private List<PorteItem> porteList = new ArrayList<>();
 
 
+
+
     public GareRepository() {
         db = FirebaseFirestore.getInstance();
         garesCollection = db.collection("gares");
@@ -96,6 +98,19 @@ public class GareRepository {
 
     public void deleteGare(String gareId) {
         // Supprimer une gare de la collection "gares"
+
+        PorteRepository porteRepository = new PorteRepository(gareId);
+        porteRepository.getAllPortes().addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                List<PorteItem> portes = task.getResult();
+                for (PorteItem porte : portes) {
+                    porteRepository.deletePorte(porte.getId());
+                }
+            } else {
+                Log.e(TAG, "Erreur lors de la récupération des portes", task.getException());
+            }
+        });
+
         garesCollection.document(gareId).delete()
                 .addOnSuccessListener(aVoid -> Log.d(TAG, "Gare supprimée avec succès"))
                 .addOnFailureListener(e -> Log.e(TAG, "Erreur lors de la suppression de la gare", e));

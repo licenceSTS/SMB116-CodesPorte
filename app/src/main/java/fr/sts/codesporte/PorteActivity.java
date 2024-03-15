@@ -19,6 +19,12 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.SearchView;
 
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
@@ -29,12 +35,14 @@ import java.util.stream.Collectors;
 import fr.sts.codesporte.repository.GareRepository;
 import fr.sts.codesporte.repository.PorteRepository;
 
-public class PorteActivity extends AppCompatActivity {
+public class PorteActivity extends AppCompatActivity implements OnMapReadyCallback {
     private final List<PorteItem> listePorte = new ArrayList<>();
     private final List<PorteItem> filteredListePorte = new ArrayList<>();
     private PorteAdapter porteAdapter;
     private SearchView searchView;
     private GareRepository gareRepository = new GareRepository();
+
+    private GoogleMap mMap;
 
     private static final int ADD_PORTE_REQUEST = 1;
 
@@ -81,10 +89,42 @@ public class PorteActivity extends AppCompatActivity {
             }
         });
 
+        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
+        mapFragment.getMapAsync(this);
+
 
 
         searchView = findViewById(R.id.search_code);
         setupSearchView();
+    }
+
+    @Override
+    public void onMapReady(GoogleMap googleMap) {
+        mMap = googleMap;
+        // Add a marker in Sydney, Australia, and move the camera.
+        mMap.clear();
+
+        int positionGare = getIntent().getIntExtra("position", 0);
+        gareRepository.getAllGares().addOnSuccessListener(new OnSuccessListener<List<GareItem>>() {
+            @Override
+            public void onSuccess(List<GareItem> gareItems) {
+                List<PorteItem> portes = gareItems.get(positionGare).getPorteList();
+                if (portes != null && !portes.isEmpty()) {
+                    for (PorteItem porte : portes) {
+                        LatLng porteLatLng = new LatLng(porte.getLatitude(), porte.getLongitude());
+                        mMap.addMarker(new MarkerOptions().position(porteLatLng).title(porte.getDescription()));
+                        mMap.moveCamera(CameraUpdateFactory.newLatLng(porteLatLng));
+                    }
+                }
+            }
+        });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
+        mapFragment.getMapAsync(this);
     }
 
     private void setupItemTouchHelper(RecyclerView recyclerView) {

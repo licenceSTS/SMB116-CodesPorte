@@ -1,6 +1,8 @@
 package fr.sts.codesporte;
 
 public class PorteItem {
+
+    private String id;
     private String description;
     private String code;
     private double longitude;
@@ -11,6 +13,18 @@ public class PorteItem {
         this.code = code;
         this.longitude = longitude;
         this.latitude = latitude;
+    }
+
+    public PorteItem(String id, String description, String code, double longitude, double latitude) {
+        this.id = id;
+        this.description = description;
+        this.code = code;
+        this.longitude = longitude;
+        this.latitude = latitude;
+    }
+
+    public String getId() {
+        return id;
     }
 
     // Getters
