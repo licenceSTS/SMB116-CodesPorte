@@ -14,6 +14,7 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.SearchView;
 import android.widget.TextView;
@@ -29,6 +30,7 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import fr.sts.codesporte.repository.GareRepository;
@@ -44,6 +46,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private GoogleMap mMap;
 
     private GareRepository gareRepository = new GareRepository();
+    private android.util.Log Log;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,8 +67,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 setupItemTouchHelper(recyclerView);
 
                 gareAdapter.setOnItemClickListener(position -> {
+                    GareItem gareItem = gareList.get(position);
                     Intent intent = new Intent(MainActivity.this, PorteActivity.class);
                     intent.putExtra("position", position);
+                    intent.putExtra("idGare", gareItem.getId());
                     startActivity(intent);
                 });
 
@@ -78,14 +83,12 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                 searchView = findViewById(R.id.search_gare);
                 setupSearchView();
-
             }
         });
 
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
     }
-
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
@@ -100,6 +103,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     mMap.addMarker(new MarkerOptions().position(latLng).title(gare.getNom()));
                     mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
                 }
+                Log.d("MainActivity", "Nombre de gares récupérées: " + gares.size());
+                // Reste du code...
+            } else {
+                Log.e("MainActivity", "Erreur lors de la récupération des gares", task.getException());
             }
         });
     }
@@ -219,7 +226,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private void showDeleteConfirmationDialog(final int actualPosition) {
         new AlertDialog.Builder(this)
                 .setTitle("Suppression")
-                .setMessage("Voulez-vous vraiment supprimer cet gare ?")
+                .setMessage("Voulez-vous vraiment supprimer cette gare ?")
                 .setPositiveButton(R.string.action_yes, (dialog, which) -> deleteGare(actualPosition))
                 .setNegativeButton(R.string.action_no, (dialog, which) -> gareAdapter.notifyItemChanged(actualPosition)) // Réinitialise l'état visuel de l'item
                 .setIcon(android.R.drawable.ic_dialog_alert)
@@ -249,7 +256,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     private void modifyGare(int position) {
-        Intent intent = new Intent(MainActivity.this, AddGareActivity.class);
+        Intent intent = new Intent(this, AddGareActivity.class);
+        intent.putExtra("modify", true);
         intent.putExtra("position", position);
         startActivity(intent);
     }

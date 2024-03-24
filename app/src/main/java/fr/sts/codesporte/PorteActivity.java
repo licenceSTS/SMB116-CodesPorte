@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.SearchView;
@@ -36,11 +37,12 @@ import fr.sts.codesporte.repository.GareRepository;
 import fr.sts.codesporte.repository.PorteRepository;
 
 public class PorteActivity extends AppCompatActivity implements OnMapReadyCallback {
-    private final List<PorteItem> listePorte = new ArrayList<>();
+    private static final List<PorteItem> listePorte = new ArrayList<>();
     private final List<PorteItem> filteredListePorte = new ArrayList<>();
     private PorteAdapter porteAdapter;
     private SearchView searchView;
     private GareRepository gareRepository = new GareRepository();
+    private PorteRepository porteRepository;
 
     private GoogleMap mMap;
 
@@ -53,11 +55,25 @@ public class PorteActivity extends AppCompatActivity implements OnMapReadyCallba
 
         Button backButton = findViewById(R.id.back_button);
         FloatingActionButton addButton = findViewById(R.id.add_codeporte);
-        RecyclerView recyclerView = findViewById(R.id.list_code); // Assurez-vous que l'ID correspond à celui dans votre layout XML
+        RecyclerView recyclerView = findViewById(R.id.list_code);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        // Supposons que vous récupériez la liste des portes de l'intent
+        setupItemTouchHelper(recyclerView);
+
+        // Récupérer la liste des portes de l'intent
         int positionGare = getIntent().getIntExtra("position", 0);
+        String idGare = getIntent().getStringExtra("idGare");
+
+        if (idGare == null || idGare.isEmpty()) {
+            // Afficher une erreur ou fermer l'activité si l'ID de la gare n'est pas fourni
+            Log.e("PorteActivity", "L'ID de la gare est requis pour PorteActivity");
+            finish();
+            return;
+        }
+
+        // Utiliser l'ID de la gare pour initialiser le repository
+        porteRepository = new PorteRepository(idGare);
+
         gareRepository.getAllGares().addOnSuccessListener(new OnSuccessListener<List<GareItem>>() {
             @Override
             public void onSuccess(List<GareItem> gareItems) {
@@ -69,7 +85,7 @@ public class PorteActivity extends AppCompatActivity implements OnMapReadyCallba
                 porteAdapter = new PorteAdapter(filteredListePorte);
                 recyclerView.setAdapter(porteAdapter);
                 porteAdapter.setOnItemClickListener(position -> {
-                    // Ici, vous pouvez gérer le clic sur un élément, par exemple afficher les détails de la porte
+                    // Ici, possible d'afficher les détails de la porte
                 });
             }
         });
@@ -120,6 +136,10 @@ public class PorteActivity extends AppCompatActivity implements OnMapReadyCallba
         });
     }
 
+    public static List<PorteItem> getListePorte() {
+        return listePorte;
+    }
+
     @Override
     protected void onResume() {
         super.onResume();
@@ -146,6 +166,11 @@ public class PorteActivity extends AppCompatActivity implements OnMapReadyCallba
                     } else if (direction == ItemTouchHelper.RIGHT) {
                         modifyPorte(actualPosition);
                     }
+                    // Réinitialisation manuelle de la vue
+                    viewHolder.itemView.setTranslationX(0);
+
+                    // Si nécessaire, notifiez l'adaptateur du changement
+                    porteAdapter.notifyItemChanged(position);
                 }
             }
 
@@ -196,34 +221,51 @@ public class PorteActivity extends AppCompatActivity implements OnMapReadyCallba
         itemTouchHelper.attachToRecyclerView(recyclerView);
     }
 
-    private void showDeleteConfirmationDialog(final int position) {
+    public static List<PorteItem> getPorteList() {
+        return listePorte;
+    }
+
+    private void showDeleteConfirmationDialog(final int actualPosition) {
         new AlertDialog.Builder(this)
                 .setTitle("Suppression")
-                .setMessage("Voulez-vous vraiment supprimer cet porte ?")
-                .setPositiveButton(R.string.action_yes, (dialog, which) -> {
-                    // Suppression confirmée
-                    deletePorte(position);
-                })
-                .setNegativeButton(R.string.action_no, (dialog, which) -> {
-                    // Annulation de la suppression, restaurez la vue
-                    porteAdapter.notifyItemChanged(position);
-                })
+                .setMessage("Voulez-vous vraiment supprimer cette porte ?")
+                .setPositiveButton(R.string.action_yes, (dialog, which) -> deletePorte(actualPosition))
+                .setNegativeButton(R.string.action_no, (dialog, which) -> porteAdapter.notifyItemChanged(actualPosition)) // Réinitialise l'état visuel de l'item
                 .setIcon(android.R.drawable.ic_dialog_alert)
                 .show();
     }
 
-    private void deletePorte(int position) {
-        // Supprimez l'élément de la liste
-        listePorte.remove(position);
-        // Notifiez l'adaptateur du changement
-        porteAdapter.notifyItemRemoved(position);
-        porteAdapter.notifyItemRangeChanged(position, listePorte.size());
+    private void deletePorte(int actualPosition) {
+        if (actualPosition >= 0 && actualPosition < listePorte.size()) {
+            // Supprime de la liste principale
+            listePorte.remove(actualPosition);
+            porteRepository.deletePorte(filteredListePorte.get(actualPosition).getId());
+
+            // Mise à jour et filtrage de la liste affichée si nécessaire
+            updateFilteredListePorte();
+
+            // Inutile d'appeler notifyItemRemoved et notifyItemRangeChanged en même temps
+            porteAdapter.notifyDataSetChanged(); // Ceci est suffisant pour rafraîchir la vue
+        }
     }
 
-    private void modifyPorte(int position) {
-        /*Intent intent = new Intent(MainActivity.this, AddGareActivity.class);
-        intent.putExtra("position", position);
-        startActivity(intent);*/
+    private void updateFilteredListePorte() {
+        // Met à jour filteredGareList basé sur votre logique de filtrage actuelle
+        // Par exemple, si aucun filtre n'est appliqué, copiez simplement gareList
+        filteredListePorte.clear();
+        filteredListePorte.addAll(listePorte);
+        // Si un filtre est appliqué, refiltrez gareList ici selon vos critères de filtrage
+    }
+
+    private void modifyPorte(int positionPorte) {
+        PorteItem porteItem = listePorte.get(positionPorte);
+        Intent intent = new Intent(this, AddPorteActivity.class);
+        intent.putExtra("modify", true);
+        intent.putExtra("code", porteItem.getCode());
+        intent.putExtra("description", porteItem.getDescription());
+        intent.putExtra("latitude", porteItem.getLatitude());
+        intent.putExtra("longitude", porteItem.getLongitude());
+        startActivityForResult(intent, ADD_PORTE_REQUEST);
     }
 
     public void addPorte(View view) {
@@ -273,18 +315,23 @@ public class PorteActivity extends AppCompatActivity implements OnMapReadyCallba
             @SuppressLint("NotifyDataSetChanged")
             @Override
             public boolean onQueryTextChange(String newText) {
-                filteredListePorte.clear();
-                if (newText.isEmpty()) {
-                    filteredListePorte.addAll(listePorte);
+                if (porteAdapter != null) {
+                    filteredListePorte.clear();
+                    if (newText.isEmpty()) {
+                        filteredListePorte.addAll(listePorte);
+                    } else {
+                        List<PorteItem> filtered = listePorte.stream()
+                                .filter(porte -> porte.getDescription().toLowerCase().contains(newText.toLowerCase()))
+                                .collect(Collectors.toList());
+                        filteredListePorte.addAll(filtered);
+                    }
+                    porteAdapter.notifyDataSetChanged();
                 } else {
-                    List<PorteItem> filtered = listePorte.stream()
-                            .filter(porte -> porte.getDescription().toLowerCase().contains(newText.toLowerCase()))
-                            .collect(Collectors.toList());
-                    filteredListePorte.addAll(filtered);
+                    Log.e("PorteActivity", "porteAdapter n'est pas initialisé.");
                 }
-                porteAdapter.notifyDataSetChanged();
                 return false;
             }
+
         });
     }
 }

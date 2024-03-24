@@ -7,12 +7,14 @@ public class PorteItem {
     private String code;
     private double longitude;
     private double latitude;
+    private String idGare;
 
     public PorteItem(String description, String code, double longitude, double latitude) {
         this.description = description;
         this.code = code;
         this.longitude = longitude;
         this.latitude = latitude;
+        this.idGare = idGare;
     }
 
     public PorteItem(String id, String description, String code, double longitude, double latitude) {
@@ -59,5 +61,13 @@ public class PorteItem {
 
     public void setLatitude(double latitude) {
         this.latitude = latitude;
+    }
+
+    public String getIdGare() {
+        return idGare;
+    }
+
+    public void setIdGare(String idGare) {
+        this.idGare = idGare;
     }
 }

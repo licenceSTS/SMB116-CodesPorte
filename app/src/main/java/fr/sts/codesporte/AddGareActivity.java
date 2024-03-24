@@ -66,18 +66,15 @@ public class  AddGareActivity extends Activity {
             if (position != -1) {
                 // Mode modification
                 gareRepository.editGare(MainActivity.getGareList().get(position).getId(), gareItem);
-                setResult(RESULT_OK);
-                finish();
             }else{
                 gareRepository.addGare(gareItem);
-                setResult(RESULT_OK);
-                finish();
             }
+            setResult(RESULT_OK);
+            finish();
         } catch (NumberFormatException e) {
             Toast.makeText(this, "Erreur de format dans les coordonnées", Toast.LENGTH_SHORT).show();
         }
     }
-
 
     private void displayGareItem(GareItem gareItem) {
         gareNameEditText.setText(gareItem.getNom());

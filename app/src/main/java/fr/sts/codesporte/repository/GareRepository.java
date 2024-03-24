@@ -26,9 +26,6 @@ public class GareRepository {
 
     private List<PorteItem> porteList = new ArrayList<>();
 
-
-
-
     public GareRepository() {
         db = FirebaseFirestore.getInstance();
         garesCollection = db.collection("gares");

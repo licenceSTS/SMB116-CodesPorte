@@ -8,7 +8,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import java.util.List;
 
-public class PorteAdapter extends RecyclerView.Adapter<PorteAdapter.ViewHolder> {
+public class PorteAdapter extends RecyclerView.Adapter<PorteAdapter.PorteViewHolder> {
     private final List<PorteItem> porteList;
     private OnItemClickListener listener;
 
@@ -18,13 +18,13 @@ public class PorteAdapter extends RecyclerView.Adapter<PorteAdapter.ViewHolder> 
 
     @NonNull
     @Override
-    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public PorteAdapter.PorteViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View itemView = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_porte, parent, false);
-        return new ViewHolder(itemView, listener);
+        return new PorteAdapter.PorteViewHolder(itemView, listener);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull PorteViewHolder holder, int position) {
         PorteItem currentItem = porteList.get(position);
         holder.porteTextView.setText("Description : " + currentItem.getDescription());
         holder.codeTextView.setText("Code : " +currentItem.getCode());
@@ -47,11 +47,11 @@ public class PorteAdapter extends RecyclerView.Adapter<PorteAdapter.ViewHolder> 
         notifyItemChanged(position);
     }
 
-    public static class ViewHolder extends RecyclerView.ViewHolder {
+    public static class PorteViewHolder extends RecyclerView.ViewHolder {
         TextView porteTextView;
         TextView codeTextView;
 
-        public ViewHolder(View itemView, final OnItemClickListener listener) {
+        public PorteViewHolder(View itemView, final OnItemClickListener listener) {
             super(itemView);
             porteTextView = itemView.findViewById(R.id.textViewPorte);
             codeTextView = itemView.findViewById(R.id.textViewCode);

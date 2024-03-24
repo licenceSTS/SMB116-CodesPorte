@@ -23,4 +23,5 @@
     <string name="retour_aux_gares">Retour aux gares</string>
     <string name="ajouter_une_porte">Ajouter une porte</string>
     <string name="no_result">Aucun résultat</string>
+    <string name="textViewTitreAddModifPorte">Ajouter une porte</string>
 </resources>
