@@ -23,20 +23,20 @@
             android:textStyle="bold" />
 
         <EditText
-            android:id="@+id/editTextCode"
-            android:layout_width="match_parent"
-            android:layout_height="60dp"
-            android:hint="@string/code"
-            android:autofillHints=""
-            android:inputType="numberDecimal" />
-
-        <EditText
             android:id="@+id/editTextDescription"
             android:layout_width="match_parent"
             android:layout_height="60dp"
             android:hint="@string/description_de_la_porte"
             android:autofillHints=""
             android:inputType="text" />
+
+        <EditText
+            android:id="@+id/editTextCode"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:hint="@string/code"
+            android:autofillHints=""
+            android:inputType="numberDecimal" />
 
         <EditText
             android:id="@+id/editTextLongitude"

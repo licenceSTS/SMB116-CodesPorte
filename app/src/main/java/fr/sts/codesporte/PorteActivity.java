@@ -1,10 +1,14 @@
 package fr.sts.codesporte;
 
 import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
+import android.widget.SearchView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
@@ -13,11 +17,6 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
-import android.content.Intent;
-import android.view.View;
-import android.widget.Button;
-import android.widget.SearchView;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -36,15 +35,19 @@ import fr.sts.codesporte.repository.GareRepository;
 import fr.sts.codesporte.repository.PorteRepository;
 
 public class PorteActivity extends AppCompatActivity implements OnMapReadyCallback {
-    private final List<PorteItem> listePorte = new ArrayList<>();
+    private static final List<PorteItem> listePorte = new ArrayList<>();
     private final List<PorteItem> filteredListePorte = new ArrayList<>();
     private PorteAdapter porteAdapter;
     private SearchView searchView;
-    private GareRepository gareRepository = new GareRepository();
+    private final GareRepository gareRepository = new GareRepository();
 
     private GoogleMap mMap;
 
     private static final int ADD_PORTE_REQUEST = 1;
+
+    public static List<PorteItem> getPorteList() {
+        return listePorte;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,8 +71,17 @@ public class PorteActivity extends AppCompatActivity implements OnMapReadyCallba
                 }
                 porteAdapter = new PorteAdapter(filteredListePorte);
                 recyclerView.setAdapter(porteAdapter);
+
+                setupItemTouchHelper(recyclerView);
+
                 porteAdapter.setOnItemClickListener(position -> {
-                    // Ici, vous pouvez gérer le clic sur un élément, par exemple afficher les détails de la porte
+                    if (position >= 0 && position < filteredListePorte.size()) {
+                        PorteItem porteSelectionnee = filteredListePorte.get(position);
+                        LatLng positionPorte = new LatLng(porteSelectionnee.getLatitude(), porteSelectionnee.getLongitude());
+
+                        // Centrer la carte sur la position de la porte
+                        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(positionPorte, 15)); // Vous pouvez ajuster le niveau de zoom selon vos besoins
+                    }
                 });
             }
         });
@@ -146,6 +158,11 @@ public class PorteActivity extends AppCompatActivity implements OnMapReadyCallba
                     } else if (direction == ItemTouchHelper.RIGHT) {
                         modifyPorte(actualPosition);
                     }
+                    // Réinitialisation manuelle de la vue
+                    viewHolder.itemView.setTranslationX(0);
+
+                    // Si nécessaire, notifiez l'adaptateur du changement
+                    porteAdapter.notifyItemChanged(position);
                 }
             }
 
@@ -199,7 +216,7 @@ public class PorteActivity extends AppCompatActivity implements OnMapReadyCallba
     private void showDeleteConfirmationDialog(final int position) {
         new AlertDialog.Builder(this)
                 .setTitle("Suppression")
-                .setMessage("Voulez-vous vraiment supprimer cet porte ?")
+                .setMessage("Voulez-vous vraiment supprimer la porte " + listePorte.get(position).getDescription() + " ?")
                 .setPositiveButton(R.string.action_yes, (dialog, which) -> {
                     // Suppression confirmée
                     deletePorte(position);
@@ -221,9 +238,10 @@ public class PorteActivity extends AppCompatActivity implements OnMapReadyCallba
     }
 
     private void modifyPorte(int position) {
-        /*Intent intent = new Intent(MainActivity.this, AddGareActivity.class);
+        Intent intent = new Intent(this, AddPorteActivity.class);
         intent.putExtra("position", position);
-        startActivity(intent);*/
+        intent.putExtra("idGare", getIntent().getIntExtra("idGare", 0));
+        startActivityForResult(intent, ADD_PORTE_REQUEST);
     }
 
     public void addPorte(View view) {

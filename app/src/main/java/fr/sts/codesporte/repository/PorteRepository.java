@@ -15,8 +15,8 @@ import fr.sts.codesporte.PorteItem;
 
 public class PorteRepository {
     private static final String TAG = "PorteRepository";
-    private FirebaseFirestore db;
-    private CollectionReference portesCollection;
+    private final FirebaseFirestore db;
+    private final CollectionReference portesCollection;
 
     public PorteRepository(String gareId) {
         db = FirebaseFirestore.getInstance();
@@ -33,7 +33,7 @@ public class PorteRepository {
                     String description = documentSnapshot.getString("description");
                     double latitude = documentSnapshot.getDouble("latitude");
                     double longitude = documentSnapshot.getDouble("longitude");
-                    PorteItem porte = new PorteItem(id,code, description, latitude, longitude);
+                    PorteItem porte = new PorteItem(id, description, code, latitude, longitude);
                     portes.add(porte);
                 }
                 return Tasks.forResult(portes);
