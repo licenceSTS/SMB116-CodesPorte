@@ -9,12 +9,13 @@ public class PorteItem {
     private double latitude;
     private String idGare;
 
+    public PorteItem() {}
+
     public PorteItem(String description, String code, double longitude, double latitude) {
         this.description = description;
         this.code = code;
         this.longitude = longitude;
         this.latitude = latitude;
-        this.idGare = idGare;
     }
 
     public PorteItem(String id, String description, String code, double longitude, double latitude) {

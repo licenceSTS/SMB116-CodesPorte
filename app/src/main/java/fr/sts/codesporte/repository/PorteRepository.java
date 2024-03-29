@@ -7,6 +7,7 @@ import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,24 +24,19 @@ public class PorteRepository {
         portesCollection = db.collection("/gares/" + gareId + "/portes");
     }
 
-    public Task<List<PorteItem>> getAllPortes() {
-        return portesCollection.get().continueWithTask(task -> {
-            if (task.isSuccessful()) {
-                List<PorteItem> portes = new ArrayList<>();
-                for (DocumentSnapshot documentSnapshot : task.getResult()) {
-                    String id = documentSnapshot.getId();
-                    String code = documentSnapshot.getString("code");
-                    String description = documentSnapshot.getString("description");
-                    double latitude = documentSnapshot.getDouble("latitude");
-                    double longitude = documentSnapshot.getDouble("longitude");
-                    PorteItem porte = new PorteItem(id,code, description, latitude, longitude);
-                    portes.add(porte);
-                }
-                return Tasks.forResult(portes);
-            } else {
+    public Task<List<PorteItem>> getAllPortesFromGare() {
+        return portesCollection.get().continueWith(task -> {
+            if (!task.isSuccessful()) {
                 Log.e(TAG, "Erreur lors de la récupération des portes", task.getException());
-                return Tasks.forResult(null);
+                throw task.getException();
             }
+
+            List<PorteItem> portes = new ArrayList<>();
+            for (QueryDocumentSnapshot document : task.getResult()) {
+                PorteItem porte = document.toObject(PorteItem.class);
+                portes.add(porte);
+            }
+            return portes;
         });
     }
 

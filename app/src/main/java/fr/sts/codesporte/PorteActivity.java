@@ -53,65 +53,144 @@ public class PorteActivity extends AppCompatActivity implements OnMapReadyCallba
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_portes);
 
-        Button backButton = findViewById(R.id.back_button);
-        FloatingActionButton addButton = findViewById(R.id.add_codeporte);
-        RecyclerView recyclerView = findViewById(R.id.list_code);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        setupViews();
+        setupListeners();
 
-        setupItemTouchHelper(recyclerView);
-
-        // Récupérer la liste des portes de l'intent
-        int positionGare = getIntent().getIntExtra("position", 0);
         String idGare = getIntent().getStringExtra("idGare");
-
         if (idGare == null || idGare.isEmpty()) {
-            // Afficher une erreur ou fermer l'activité si l'ID de la gare n'est pas fourni
             Log.e("PorteActivity", "L'ID de la gare est requis pour PorteActivity");
             finish();
             return;
         }
 
-        // Utiliser l'ID de la gare pour initialiser le repository
         porteRepository = new PorteRepository(idGare);
 
-        gareRepository.getAllGares().addOnSuccessListener(new OnSuccessListener<List<GareItem>>() {
-            @Override
-            public void onSuccess(List<GareItem> gareItems) {
-                List<PorteItem> portes = gareItems.get(positionGare).getPorteList();
-                if (portes != null && !portes.isEmpty()) {
-                    listePorte.addAll(portes);
-                    filteredListePorte.addAll(listePorte);
-                }
-                porteAdapter = new PorteAdapter(filteredListePorte);
-                recyclerView.setAdapter(porteAdapter);
-                porteAdapter.setOnItemClickListener(position -> {
-                    // Ici, possible d'afficher les détails de la porte
-                });
-            }
-        });
-        backButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent resultIntent = new Intent();
-                setResult(RESULT_OK, resultIntent);
-                finish();
-            }
-        });
+        retrieveAndDisplayPortes();
+    }
 
-        addButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                addPorte(view);
-            }
-        });
+    private void retrieveAndDisplayPortes() {
+        String idGare = getIntent().getStringExtra("idGare");
+        if (idGare != null) {
+            porteRepository.getAllPortesFromGare().addOnCompleteListener(task -> {
+                if (task.isSuccessful() && task.getResult() != null) {
+                    List<PorteItem> portes = task.getResult();
+
+                    listePorte.clear();
+                    listePorte.addAll(portes);
+                    filteredListePorte.addAll(portes);
+                    porteAdapter.notifyDataSetChanged();
+
+                    if (mMap != null) {
+                        mMap.clear();
+                        for (PorteItem porte : portes) {
+                            LatLng portePosition = new LatLng(porte.getLatitude(), porte.getLongitude());
+                            mMap.addMarker(new MarkerOptions().position(portePosition).title(porte.getDescription()));
+                        }
+
+                        if (!portes.isEmpty()) {
+                            LatLng firstPortePosition = new LatLng(portes.get(0).getLatitude(), portes.get(0).getLongitude());
+                            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(firstPortePosition, 15));
+                        }
+                    }
+                } else {
+                    Log.e("PorteActivity", "Erreur lors de la récupération des portes", task.getException());
+                }
+            });
+        }
+    }
+
+    private void setupViews() {
+        RecyclerView recyclerView = findViewById(R.id.list_code);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        porteAdapter = new PorteAdapter(new ArrayList<>());
+        recyclerView.setAdapter(porteAdapter);
 
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
-        mapFragment.getMapAsync(this);
-
-
+        if (mapFragment != null) {
+            mapFragment.getMapAsync(this);
+        }
 
         searchView = findViewById(R.id.search_code);
+    }
+
+    private void setupListeners() {
+        Button backButton = findViewById(R.id.back_button);
+        backButton.setOnClickListener(v -> finish());
+
+        FloatingActionButton addButton = findViewById(R.id.add_codeporte);
+        addButton.setOnClickListener(v -> {
+            Intent intent = new Intent(PorteActivity.this, AddPorteActivity.class);
+            intent.putExtra("idGare", getIntent().getStringExtra("idGare"));
+            startActivityForResult(intent, ADD_PORTE_REQUEST);
+        });
+
         setupSearchView();
+        setupItemTouchHelper((RecyclerView) findViewById(R.id.list_code));
+    }
+
+    private void setupSearchView() {
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                filteredListePorte.clear();
+                if (newText.isEmpty()) {
+                    filteredListePorte.addAll(listePorte);
+                } else {
+                    List<PorteItem> filtered = listePorte.stream()
+                            .filter(porte -> porte.getDescription().toLowerCase().contains(newText.toLowerCase()))
+                            .collect(Collectors.toList());
+                    filteredListePorte.addAll(filtered);
+                }
+                porteAdapter.notifyDataSetChanged();
+                return false;
+            }
+        });
+    }
+
+    private void setupItemTouchHelper(RecyclerView recyclerView) {
+        ItemTouchHelper.SimpleCallback simpleItemTouchCallback = new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
+            @Override
+            public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
+                return false;
+            }
+
+            @Override
+            public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
+                int position = viewHolder.getAdapterPosition();
+                if (position != RecyclerView.NO_POSITION) {
+                    if (direction == ItemTouchHelper.LEFT) {
+                        deletePorte(position);
+                    } else {
+                        modifyPorte(position);
+                    }
+                    porteAdapter.notifyItemChanged(position);
+                }
+            }
+
+            @Override
+            public void onChildDraw(@NonNull Canvas c, @NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder,
+                                    float dX, float dY, int actionState, boolean isCurrentlyActive) {
+                super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
+                // Code pour personnaliser le swipe visuellement (optionnel)
+            }
+        };
+
+        new ItemTouchHelper(simpleItemTouchCallback).attachToRecyclerView(recyclerView);
+    }
+
+    private void updateMapWithPortes(List<PorteItem> portes) {
+        if (mMap != null) {
+            mMap.clear();
+            for (PorteItem porte : portes) {
+                LatLng portePosition = new LatLng(porte.getLatitude(), porte.getLongitude());
+                mMap.addMarker(new MarkerOptions().position(portePosition).title(porte.getDescription()));
+            }
+        }
     }
 
     @Override
@@ -120,109 +199,39 @@ public class PorteActivity extends AppCompatActivity implements OnMapReadyCallba
         // Add a marker in Sydney, Australia, and move the camera.
         mMap.clear();
 
-        int positionGare = getIntent().getIntExtra("position", 0);
-        gareRepository.getAllGares().addOnSuccessListener(new OnSuccessListener<List<GareItem>>() {
-            @Override
-            public void onSuccess(List<GareItem> gareItems) {
-                List<PorteItem> portes = gareItems.get(positionGare).getPorteList();
-                if (portes != null && !portes.isEmpty()) {
-                    for (PorteItem porte : portes) {
-                        LatLng porteLatLng = new LatLng(porte.getLatitude(), porte.getLongitude());
-                        mMap.addMarker(new MarkerOptions().position(porteLatLng).title(porte.getDescription()));
-                        mMap.moveCamera(CameraUpdateFactory.newLatLng(porteLatLng));
-                    }
+        porteRepository.getAllPortesFromGare().addOnSuccessListener(portes -> {
+            if (!portes.isEmpty()) {
+                for (PorteItem porte : portes) {
+                    LatLng porteLatLng = new LatLng(porte.getLatitude(), porte.getLongitude());
+                    mMap.addMarker(new MarkerOptions().position(porteLatLng).title(porte.getDescription()));
+                    mMap.moveCamera(CameraUpdateFactory.newLatLng(porteLatLng));
                 }
+                Log.d("PorteActivity", "Nombre de portes récupérées: " + portes.size());
             }
-        });
+        }).addOnFailureListener(e ->
+            Log.e("PorteActivity", "Erreur lors de la sélection des portes", e)
+        );
     }
 
-    public static List<PorteItem> getListePorte() {
-        return listePorte;
+    private void updatePorteList() {
+        PorteRepository porteRepository = new PorteRepository(getIntent().getStringExtra("idGare"));
+        porteRepository.getAllPortesFromGare().addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                List<PorteItem> portes = task.getResult();
+                listePorte.clear();
+                listePorte.addAll(portes);
+                updateFilteredListePorte();
+                porteAdapter.notifyDataSetChanged();
+            }
+        });
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+        updatePorteList();
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
-    }
-
-    private void setupItemTouchHelper(RecyclerView recyclerView) {
-        ItemTouchHelper.SimpleCallback simpleItemTouchCallback = new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
-            @Override
-            public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
-                return false; // Pas de déplacement supporté
-            }
-
-            @Override
-            public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
-                // Utilisez viewHolder.getBindingAdapterPosition() pour obtenir la position actuelle
-                int position = viewHolder.getBindingAdapterPosition();
-                if (position != RecyclerView.NO_POSITION) {
-                    PorteItem swipedPorte = filteredListePorte.get(position);
-                    int actualPosition = listePorte.indexOf(swipedPorte);
-                    if (direction == ItemTouchHelper.LEFT) {
-                        showDeleteConfirmationDialog(actualPosition);
-                    } else if (direction == ItemTouchHelper.RIGHT) {
-                        modifyPorte(actualPosition);
-                    }
-                    // Réinitialisation manuelle de la vue
-                    viewHolder.itemView.setTranslationX(0);
-
-                    // Si nécessaire, notifiez l'adaptateur du changement
-                    porteAdapter.notifyItemChanged(position);
-                }
-            }
-
-            @Override
-            public void onChildDraw(@NonNull Canvas c, @NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder,
-                                    float dX, float dY, int actionState, boolean isCurrentlyActive) {
-                if (dX != 0 || isCurrentlyActive) {
-                    View itemView = viewHolder.itemView;
-                    Paint paint = new Paint();
-                    Drawable icon;
-
-                    if (dX > 0) {
-                        // Swipe to the right (Edit action)
-                        icon = ContextCompat.getDrawable(PorteActivity.this, R.drawable.ic_edit);
-                        paint.setColor(ContextCompat.getColor(PorteActivity.this, R.color.orange));
-                    } else {
-                        // Swipe to the left (Delete action)
-                        icon = ContextCompat.getDrawable(PorteActivity.this, R.drawable.ic_delete);
-                        paint.setColor(ContextCompat.getColor(PorteActivity.this, R.color.red));
-                    }
-
-                    // Draw the red or orange background
-                    if (dX > 0) { // Right swipe
-                        c.drawRect((float) itemView.getLeft(), (float) itemView.getTop(), dX,
-                                (float) itemView.getBottom(), paint);
-                    } else { // Left swipe
-                        c.drawRect((float) itemView.getRight() + dX, (float) itemView.getTop(),
-                                (float) itemView.getRight(), (float) itemView.getBottom(), paint);
-                    }
-
-                    assert icon != null;
-                    int iconMargin = (itemView.getHeight() - icon.getIntrinsicHeight()) / 2;
-                    int iconTop = itemView.getTop() + (itemView.getHeight() - icon.getIntrinsicHeight()) / 2;
-                    int iconLeft = itemView.getLeft() + iconMargin;
-                    int iconRight = itemView.getRight() - iconMargin - icon.getIntrinsicWidth();
-
-                    if (dX > 0) { // Right swipe
-                        icon.setBounds(iconLeft, iconTop, iconLeft + icon.getIntrinsicWidth(), iconTop + icon.getIntrinsicHeight());
-                    } else { // Left swipe
-                        icon.setBounds(iconRight, iconTop, iconRight + icon.getIntrinsicWidth(), iconTop + icon.getIntrinsicHeight());
-                    }
-                    icon.draw(c);
-                }
-                super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
-            }
-        };
-        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(simpleItemTouchCallback);
-        itemTouchHelper.attachToRecyclerView(recyclerView);
-    }
-
-    public static List<PorteItem> getPorteList() {
-        return listePorte;
     }
 
     private void showDeleteConfirmationDialog(final int actualPosition) {
@@ -289,7 +298,7 @@ public class PorteActivity extends AppCompatActivity implements OnMapReadyCallba
                 @Override
                 public void onSuccess(List<GareItem> gareItems) {
                     PorteRepository porteRepository = new PorteRepository(gareItems.get(positionGare).getId());
-                    porteRepository.getAllPortes().addOnSuccessListener(
+                    porteRepository.getAllPortesFromGare().addOnSuccessListener(
                             porteItems -> {
                                 System.out.println("Portes: " + porteItems.size());
                                 listePorte.clear();
@@ -303,35 +312,5 @@ public class PorteActivity extends AppCompatActivity implements OnMapReadyCallba
             });
 
         }
-    }
-
-    private void setupSearchView() {
-        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-            @Override
-            public boolean onQueryTextSubmit(String query) {
-                return false;
-            }
-
-            @SuppressLint("NotifyDataSetChanged")
-            @Override
-            public boolean onQueryTextChange(String newText) {
-                if (porteAdapter != null) {
-                    filteredListePorte.clear();
-                    if (newText.isEmpty()) {
-                        filteredListePorte.addAll(listePorte);
-                    } else {
-                        List<PorteItem> filtered = listePorte.stream()
-                                .filter(porte -> porte.getDescription().toLowerCase().contains(newText.toLowerCase()))
-                                .collect(Collectors.toList());
-                        filteredListePorte.addAll(filtered);
-                    }
-                    porteAdapter.notifyDataSetChanged();
-                } else {
-                    Log.e("PorteActivity", "porteAdapter n'est pas initialisé.");
-                }
-                return false;
-            }
-
-        });
     }
 }

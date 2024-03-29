@@ -97,7 +97,7 @@ public class GareRepository {
         // Supprimer une gare de la collection "gares"
 
         PorteRepository porteRepository = new PorteRepository(gareId);
-        porteRepository.getAllPortes().addOnCompleteListener(task -> {
+        porteRepository.getAllPortesFromGare().addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
                 List<PorteItem> portes = task.getResult();
                 for (PorteItem porte : portes) {

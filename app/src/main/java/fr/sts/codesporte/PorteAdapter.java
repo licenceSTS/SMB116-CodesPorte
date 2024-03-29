@@ -1,5 +1,6 @@
 package fr.sts.codesporte;
 
+import android.annotation.SuppressLint;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,6 +24,7 @@ public class PorteAdapter extends RecyclerView.Adapter<PorteAdapter.PorteViewHol
         return new PorteAdapter.PorteViewHolder(itemView, listener);
     }
 
+    @SuppressLint("SetTextI18n")
     @Override
     public void onBindViewHolder(@NonNull PorteViewHolder holder, int position) {
         PorteItem currentItem = porteList.get(position);

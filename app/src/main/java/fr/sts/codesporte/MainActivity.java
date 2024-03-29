@@ -226,7 +226,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private void showDeleteConfirmationDialog(final int actualPosition) {
         new AlertDialog.Builder(this)
                 .setTitle("Suppression")
-                .setMessage("Voulez-vous vraiment supprimer cette gare ?")
+                .setMessage("Voulez-vous vraiment supprimer la gare "+filteredGareList.get(actualPosition).getNom()+" ?")
                 .setPositiveButton(R.string.action_yes, (dialog, which) -> deleteGare(actualPosition))
                 .setNegativeButton(R.string.action_no, (dialog, which) -> gareAdapter.notifyItemChanged(actualPosition)) // Réinitialise l'état visuel de l'item
                 .setIcon(android.R.drawable.ic_dialog_alert)
