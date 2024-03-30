@@ -1,11 +1,14 @@
 package fr.sts.codesporte;
 
+import android.annotation.SuppressLint;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+
 import java.util.List;
 
 public class PorteAdapter extends RecyclerView.Adapter<PorteAdapter.ViewHolder> {
@@ -23,6 +26,7 @@ public class PorteAdapter extends RecyclerView.Adapter<PorteAdapter.ViewHolder> 
         return new ViewHolder(itemView, listener);
     }
 
+    @SuppressLint("SetTextI18n")
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         PorteItem currentItem = porteList.get(position);
@@ -35,16 +39,41 @@ public class PorteAdapter extends RecyclerView.Adapter<PorteAdapter.ViewHolder> 
         return porteList.size();
     }
 
-    // Méthode pour supprimer un élément
-    public void removeItem(int position) {
-        porteList.remove(position);
-        notifyItemRemoved(position);
+    public void setOnItemClickListener(PorteAdapter.OnItemClickListener listener) {
+        this.listener = listener;
     }
 
-    // Méthode pour modifier un élément
-    public void modifyItem(int position, PorteItem newItem) {
-        porteList.set(position, newItem);
-        notifyItemChanged(position);
+    @SuppressLint("NotifyDataSetChanged")
+    public void updateGareList(List<PorteItem> newPorteList) {
+        porteList.clear();
+        porteList.addAll(newPorteList);
+        notifyDataSetChanged();
+    }
+
+    // Ajoute une nouvelle gare à la liste
+    public void addPorte(PorteItem newPorte) {
+        porteList.add(newPorte);
+        notifyItemInserted(porteList.size() - 1);
+    }
+
+    public interface OnItemClickListener {
+        void onItemClick(int position);
+    }
+
+    // Méthode pour supprimer un élément
+    public void removePorte(int position) {
+        if (position >= 0 && position < porteList.size()) {
+            porteList.remove(position);
+            notifyItemRemoved(position);
+        }
+    }
+
+    // Met à jour une gare existante
+    public void updatePorte(int position, PorteItem updatedPorte) {
+        if (position >= 0 && position < porteList.size()) {
+            porteList.set(position, updatedPorte);
+            notifyItemChanged(position);
+        }
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
@@ -58,18 +87,10 @@ public class PorteAdapter extends RecyclerView.Adapter<PorteAdapter.ViewHolder> 
 
             itemView.setOnClickListener(v -> {
                 int position = getBindingAdapterPosition();
-                if (listener != null && position != RecyclerView.NO_POSITION) {
+                if (position != RecyclerView.NO_POSITION && listener != null) {
                     listener.onItemClick(position);
                 }
             });
         }
-    }
-
-    public interface OnItemClickListener {
-        void onItemClick(int position);
-    }
-
-    public void setOnItemClickListener(OnItemClickListener listener) {
-        this.listener = listener;
     }
 }

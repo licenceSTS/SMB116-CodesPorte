@@ -1,8 +1,6 @@
 package fr.sts.codesporte;
 
-import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -16,8 +14,7 @@ public class  AddGareActivity extends Activity {
     private EditText gareNameEditText;
     private EditText longitudeEditText;
     private EditText latitudeEditText;
-
-    private GareRepository gareRepository = new GareRepository();
+    private final GareRepository gareRepository = new GareRepository();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,7 +35,7 @@ public class  AddGareActivity extends Activity {
             displayGareItem(gareItem);
 
             addButton.setText("Modifier la gare");
-            titreAjoutGare.setText("Modifier la gare");
+            titreAjoutGare.setText("Modifier la gare " + gareItem.getNom());
         }
     }
 
@@ -46,7 +43,6 @@ public class  AddGareActivity extends Activity {
         String nomGare = gareNameEditText.getText().toString();
         String strLongitude = longitudeEditText.getText().toString();
         String strLatitude = latitudeEditText.getText().toString();
-
 
         if (nomGare.isEmpty() || strLongitude.isEmpty() || strLatitude.isEmpty()) {
             Toast.makeText(this, "Veuillez remplir tous les champs", Toast.LENGTH_SHORT).show();
@@ -77,7 +73,6 @@ public class  AddGareActivity extends Activity {
             Toast.makeText(this, "Erreur de format dans les coordonnées", Toast.LENGTH_SHORT).show();
         }
     }
-
 
     private void displayGareItem(GareItem gareItem) {
         gareNameEditText.setText(gareItem.getNom());

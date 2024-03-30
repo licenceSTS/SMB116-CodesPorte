@@ -1,5 +1,16 @@
 package fr.sts.codesporte;
 
+import android.annotation.SuppressLint;
+import android.content.Intent;
+import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.graphics.drawable.Drawable;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
+import android.widget.SearchView;
+import android.widget.TextView;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -8,24 +19,13 @@ import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.annotation.SuppressLint;
-import android.content.Intent;
-import android.graphics.Canvas;
-import android.graphics.Paint;
-import android.graphics.drawable.Drawable;
-import android.os.Bundle;
-import android.view.View;
-import android.widget.SearchView;
-import android.widget.TextView;
-
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.MapFragment;
+import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.gms.maps.OnMapReadyCallback;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,19 +43,20 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private GoogleMap mMap;
 
-    private GareRepository gareRepository = new GareRepository();
+    private final GareRepository gareRepository = new GareRepository();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        FloatingActionButton addButton = findViewById(R.id.add_gare);
+        RecyclerView recyclerView = findViewById(R.id.list_gare);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+
         gareRepository.getAllGares().addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
                 List<GareItem> gares = task.getResult();
-                RecyclerView recyclerView = findViewById(R.id.list_gare);
-                FloatingActionButton addButton = findViewById(R.id.add_gare);
-                recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
                 filteredGareList.addAll(gares); // Initialiser avec toutes les gares
                 gareAdapter = new GareAdapter(filteredGareList);
@@ -65,7 +66,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                 gareAdapter.setOnItemClickListener(position -> {
                     Intent intent = new Intent(MainActivity.this, PorteActivity.class);
-                    intent.putExtra("position", position);
+                    intent.putExtra("position", filteredGareList.get(position).getId());
+                    intent.putExtra("nomGare", filteredGareList.get(position).getNom());
                     startActivity(intent);
                 });
 
@@ -78,14 +80,12 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                 searchView = findViewById(R.id.search_gare);
                 setupSearchView();
-
             }
         });
 
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
     }
-
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
@@ -153,9 +153,12 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
                 // Utilisez viewHolder.getBindingAdapterPosition() pour obtenir la position actuelle
                 int position = viewHolder.getBindingAdapterPosition();
+
                 if (position != RecyclerView.NO_POSITION) {
                     GareItem swipedGare = filteredGareList.get(position);
+                    Log.d("MainActivity", "swipedGare: " + swipedGare.getId() + " " + swipedGare.getNom());
                     int actualPosition = gareList.indexOf(swipedGare);
+                    Log.d("MainActivity1", "onSwiped: " + actualPosition);
                     if (direction == ItemTouchHelper.LEFT) {
                         showDeleteConfirmationDialog(actualPosition);
                     } else if (direction == ItemTouchHelper.RIGHT) {
@@ -219,7 +222,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private void showDeleteConfirmationDialog(final int actualPosition) {
         new AlertDialog.Builder(this)
                 .setTitle("Suppression")
-                .setMessage("Voulez-vous vraiment supprimer cet gare ?")
+                .setMessage("Voulez-vous vraiment supprimer la gare " + filteredGareList.get(actualPosition).getNom() + " ?")
                 .setPositiveButton(R.string.action_yes, (dialog, which) -> deleteGare(actualPosition))
                 .setNegativeButton(R.string.action_no, (dialog, which) -> gareAdapter.notifyItemChanged(actualPosition)) // Réinitialise l'état visuel de l'item
                 .setIcon(android.R.drawable.ic_dialog_alert)
@@ -236,7 +239,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             updateFilteredGareList();
 
             // Inutile d'appeler notifyItemRemoved et notifyItemRangeChanged en même temps
-            gareAdapter.notifyDataSetChanged(); // Ceci est suffisant pour rafraîchir la vue
+            gareAdapter.notifyItemRemoved(actualPosition);
+            gareAdapter.notifyItemRangeChanged(actualPosition, gareList.size());
         }
     }
 
@@ -251,6 +255,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private void modifyGare(int position) {
         Intent intent = new Intent(MainActivity.this, AddGareActivity.class);
         intent.putExtra("position", position);
+        Log.d("MainActivity", "modifyGare: " + position);
         startActivity(intent);
     }
 
@@ -259,6 +264,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         startActivityForResult(intent, ADD_GARE_REQUEST);
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     private void updateGareList() {
         GareRepository gareRepository = new GareRepository();
         gareRepository.getAllGares().addOnCompleteListener(task -> {

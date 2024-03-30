@@ -60,4 +60,5 @@ public class PorteItem {
     public void setLatitude(double latitude) {
         this.latitude = latitude;
     }
+
 }

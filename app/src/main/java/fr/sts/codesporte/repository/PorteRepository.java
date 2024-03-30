@@ -15,8 +15,8 @@ import fr.sts.codesporte.PorteItem;
 
 public class PorteRepository {
     private static final String TAG = "PorteRepository";
-    private FirebaseFirestore db;
-    private CollectionReference portesCollection;
+    private final FirebaseFirestore db;
+    private final CollectionReference portesCollection;
 
     public PorteRepository(String gareId) {
         db = FirebaseFirestore.getInstance();
@@ -44,6 +44,32 @@ public class PorteRepository {
         });
     }
 
+    public Task<PorteItem> getPorteById(String id) {
+        return portesCollection.document(id).get().continueWith(task -> {
+            if (task.isSuccessful()) {
+                DocumentSnapshot document = task.getResult();
+                if (document != null && document.exists()) {
+                    String code = document.getString("code");
+                    String description = document.getString("description");
+                    Double latitude = document.getDouble("latitude");
+                    Double longitude = document.getDouble("longitude");
+                    return new PorteItem(id, code, description, latitude, longitude);
+                } else {
+                    Log.e(TAG, "No Porte found with id: " + id);
+                    return null;
+                }
+            } else {
+                throw task.getException();
+            }
+        });
+    }
+
+    public Task<Void> editPorte(String porteId, PorteItem porte) {
+        return portesCollection.document(porteId).set(porte)
+                .addOnSuccessListener(aVoid -> Log.d(TAG, "Porte mise à jour avec succès"))
+                .addOnFailureListener(e -> Log.e(TAG, "Erreur lors de la mise à jour de la porte", e));
+    }
+
     public void addPorte(PorteItem porte) {
         portesCollection.add(porte)
                 .addOnSuccessListener(documentReference -> Log.d(TAG, "Porte ajoutée avec l'ID: " + documentReference.getId()))
@@ -56,9 +82,7 @@ public class PorteRepository {
                 .addOnFailureListener(e -> Log.e(TAG, "Erreur lors de la suppression de la porte", e));
     }
 
-    public void editPorte(String porteId, PorteItem porte) {
-        portesCollection.document(porteId).set(porte)
-                .addOnSuccessListener(aVoid -> Log.d(TAG, "Porte mise à jour avec succès"))
-                .addOnFailureListener(e -> Log.e(TAG, "Erreur lors de la mise à jour de la porte", e));
+    public interface PorteFetchCallback {
+        void onPorteFetched(List<PorteItem> portes);
     }
 }

@@ -3,7 +3,6 @@ package fr.sts.codesporte;
 import java.util.List;
 
 public class GareItem {
-
     private String id;
     private String nom;
     private List<PorteItem> porteList; // Liste des portes associées à la gare

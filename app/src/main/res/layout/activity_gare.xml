@@ -46,12 +46,12 @@
             android:autofillHints=""
             android:inputType="numberDecimal" />
 
-        <!-- Ici, ajoutez votre MapView pour Google Maps -->
+        <!-- Ici, ajoutez votre MapView pour Google Maps
         <com.google.android.gms.maps.MapView
             android:id="@+id/mapView"
             android:layout_width="match_parent"
             android:layout_height="300dp"
-            android:layout_marginTop="16dp"/>
+            android:layout_marginTop="16dp"/>-->
 
     </LinearLayout>
 
