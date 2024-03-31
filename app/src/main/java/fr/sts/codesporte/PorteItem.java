@@ -60,4 +60,28 @@ public class PorteItem {
     public void setLatitude(double latitude) {
         this.latitude = latitude;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        PorteItem porteItem = (PorteItem) o;
+        return id != null && id.equals(porteItem.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return id != null ? id.hashCode() : 0;
+    }
+
+    @Override
+    public String toString() {
+        return "PorteItem{" +
+                "id='" + id + '\'' +
+                ", description='" + description + '\'' +
+                ", code='" + code + '\'' +
+                ", longitude=" + longitude +
+                ", latitude=" + latitude +
+                '}';
+    }
 }

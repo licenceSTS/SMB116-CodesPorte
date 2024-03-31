@@ -5,8 +5,8 @@ import android.util.Log;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,8 +15,8 @@ import fr.sts.codesporte.PorteItem;
 
 public class PorteRepository {
     private static final String TAG = "PorteRepository";
-    private FirebaseFirestore db;
-    private CollectionReference portesCollection;
+    private final FirebaseFirestore db;
+    private final CollectionReference portesCollection;
 
     public PorteRepository(String gareId) {
         db = FirebaseFirestore.getInstance();
@@ -27,19 +27,18 @@ public class PorteRepository {
         return portesCollection.get().continueWithTask(task -> {
             if (task.isSuccessful()) {
                 List<PorteItem> portes = new ArrayList<>();
-                for (DocumentSnapshot documentSnapshot : task.getResult()) {
-                    String id = documentSnapshot.getId();
-                    String code = documentSnapshot.getString("code");
+                for (QueryDocumentSnapshot documentSnapshot : task.getResult()) {
                     String description = documentSnapshot.getString("description");
-                    double latitude = documentSnapshot.getDouble("latitude");
-                    double longitude = documentSnapshot.getDouble("longitude");
-                    PorteItem porte = new PorteItem(id,code, description, latitude, longitude);
+                    String code = documentSnapshot.getString("code");
+                    double latitudePorte = documentSnapshot.getDouble("latitude");
+                    double longitudePorte = documentSnapshot.getDouble("longitude");
+                    PorteItem porte = new PorteItem(documentSnapshot.getId(), description, code, latitudePorte, longitudePorte);
                     portes.add(porte);
                 }
                 return Tasks.forResult(portes);
             } else {
-                Log.e(TAG, "Erreur lors de la récupération des portes", task.getException());
-                return Tasks.forResult(null);
+                Log.e(TAG, "Erreur lors de la sélection des portes", task.getException());
+                return Tasks.forException(task.getException());
             }
         });
     }

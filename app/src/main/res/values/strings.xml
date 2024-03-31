@@ -11,13 +11,14 @@
     <string name="action_yes">Oui</string>
     <string name="btn_annuler">Annuler</string>
     <string name="add_gare">Ajouter la gare</string>
+    <string name="add_porte">Ajouter une porte</string>
     <string name="nom_de_la_gare">Nom de la gare</string>
     <string name="longitude">Longitude</string>
     <string name="latitude">Latitude</string>
     <string name="annulerRetour">Annuler</string>
     <string name="modifier">Modifier</string>
     <string name="code">Code</string>
-    <string name="description_de_la_porte">Description de la porte</string>
+    <string name="description_de_la_porte">Nom de la porte</string>
     <string name="gare_nom">Nom Gare</string>
     <string name="retour_la_liste_des_gares">Retour à la liste des gares</string>
     <string name="retour_aux_gares">Retour aux gares</string>

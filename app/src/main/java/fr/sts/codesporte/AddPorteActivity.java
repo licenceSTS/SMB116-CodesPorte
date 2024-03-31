@@ -24,7 +24,7 @@ public class AddPorteActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_porte);
 
-        String idGare = getIntent().getStringExtra("idGare");
+        String porteId = getIntent().getStringExtra("porteId");
 
         editTextCode = findViewById(R.id.editTextCode);
         editTextDescription = findViewById(R.id.editTextDescription);
@@ -53,5 +53,9 @@ public class AddPorteActivity extends AppCompatActivity {
                 finish();
             }
         });
+    }
+
+    public void annulerRetour(View view) {
+        finish();
     }
 }

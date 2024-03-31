@@ -3,7 +3,6 @@ package fr.sts.codesporte;
 import java.util.List;
 
 public class GareItem {
-
     private String id;
     private String nom;
     private List<PorteItem> porteList; // Liste des portes associées à la gare
@@ -18,7 +17,7 @@ public class GareItem {
         this.latitude = latitude;
     }
 
-    public GareItem(String id,String nom, List<PorteItem> porteList, double longitude, double latitude) {
+    public GareItem(String id, String nom, List<PorteItem> porteList, double longitude, double latitude) {
         this.id = id;
         this.nom = nom;
         this.porteList = porteList;

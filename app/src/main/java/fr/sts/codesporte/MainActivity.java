@@ -1,5 +1,16 @@
 package fr.sts.codesporte;
 
+import android.annotation.SuppressLint;
+import android.content.Intent;
+import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.graphics.drawable.Drawable;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
+import android.widget.SearchView;
+import android.widget.TextView;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -8,24 +19,13 @@ import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.annotation.SuppressLint;
-import android.content.Intent;
-import android.graphics.Canvas;
-import android.graphics.Paint;
-import android.graphics.drawable.Drawable;
-import android.os.Bundle;
-import android.view.View;
-import android.widget.SearchView;
-import android.widget.TextView;
-
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.MapFragment;
+import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.gms.maps.OnMapReadyCallback;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,7 +43,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private GoogleMap mMap;
 
-    private GareRepository gareRepository = new GareRepository();
+    private final GareRepository gareRepository = new GareRepository();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,6 +66,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 gareAdapter.setOnItemClickListener(position -> {
                     Intent intent = new Intent(MainActivity.this, PorteActivity.class);
                     intent.putExtra("position", position);
+                    intent.putExtra("nomGare", gareList.get(position).getNom());
+                    intent.putExtra("idGare", gareList.get(position).getId());
                     startActivity(intent);
                 });
 
@@ -78,7 +80,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                 searchView = findViewById(R.id.search_gare);
                 setupSearchView();
-
             }
         });
 
@@ -156,6 +157,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 if (position != RecyclerView.NO_POSITION) {
                     GareItem swipedGare = filteredGareList.get(position);
                     int actualPosition = gareList.indexOf(swipedGare);
+                    Log.d("onSwiped", "Gare actualPosition : " + actualPosition);
                     if (direction == ItemTouchHelper.LEFT) {
                         showDeleteConfirmationDialog(actualPosition);
                     } else if (direction == ItemTouchHelper.RIGHT) {
@@ -219,7 +221,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private void showDeleteConfirmationDialog(final int actualPosition) {
         new AlertDialog.Builder(this)
                 .setTitle("Suppression")
-                .setMessage("Voulez-vous vraiment supprimer cet gare ?")
+                .setMessage("Voulez-vous vraiment supprimer cet gare " + filteredGareList.get(actualPosition).getNom() + " ?")
                 .setPositiveButton(R.string.action_yes, (dialog, which) -> deleteGare(actualPosition))
                 .setNegativeButton(R.string.action_no, (dialog, which) -> gareAdapter.notifyItemChanged(actualPosition)) // Réinitialise l'état visuel de l'item
                 .setIcon(android.R.drawable.ic_dialog_alert)
