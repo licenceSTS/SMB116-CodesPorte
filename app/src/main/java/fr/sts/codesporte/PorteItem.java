@@ -64,7 +64,7 @@ public class PorteItem {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (!(o instanceof PorteItem)) return false;
         PorteItem porteItem = (PorteItem) o;
         return id != null && id.equals(porteItem.id);
     }
@@ -72,16 +72,5 @@ public class PorteItem {
     @Override
     public int hashCode() {
         return id != null ? id.hashCode() : 0;
-    }
-
-    @Override
-    public String toString() {
-        return "PorteItem{" +
-                "id='" + id + '\'' +
-                ", description='" + description + '\'' +
-                ", code='" + code + '\'' +
-                ", longitude=" + longitude +
-                ", latitude=" + latitude +
-                '}';
     }
 }

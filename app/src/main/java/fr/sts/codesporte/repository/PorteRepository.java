@@ -5,6 +5,7 @@ import android.util.Log;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
@@ -43,8 +44,13 @@ public class PorteRepository {
         });
     }
 
-    public void addPorte(PorteItem porte) {
-        portesCollection.add(porte)
+    public Task<DocumentReference> addPorte(PorteItem porte) {
+        // Assurez-vous que porte n'est pas null pour éviter NullPointerException.
+        if (porte == null) {
+            Log.e(TAG, "L'objet PorteItem est null");
+            return Tasks.forException(new IllegalArgumentException("L'objet PorteItem ne peut pas être null"));
+        }
+        return portesCollection.add(porte)
                 .addOnSuccessListener(documentReference -> Log.d(TAG, "Porte ajoutée avec l'ID: " + documentReference.getId()))
                 .addOnFailureListener(e -> Log.e(TAG, "Erreur lors de l'ajout de la porte", e));
     }

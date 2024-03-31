@@ -29,7 +29,7 @@ public class PorteAdapter extends RecyclerView.Adapter<PorteAdapter.PorteViewHol
     @Override
     public void onBindViewHolder(@NonNull PorteViewHolder holder, int position) {
         PorteItem currentItem = porteList.get(position);
-        holder.porteTextView.setText("Description : " + currentItem.getDescription());
+        holder.porteTextView.setText("Nom : " + currentItem.getDescription());
         holder.codeTextView.setText("Code : " +currentItem.getCode());
     }
 

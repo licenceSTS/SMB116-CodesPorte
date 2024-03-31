@@ -20,13 +20,14 @@ import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
@@ -37,15 +38,14 @@ import fr.sts.codesporte.repository.PorteRepository;
 
 public class PorteActivity extends AppCompatActivity implements OnMapReadyCallback {
     private static final List<PorteItem> porteList = new ArrayList<>();
+    private static final int ADD_PORTE_REQUEST = 1;
+    private final List<PorteItem> filteredPorteList = new ArrayList<>();
     private static final int MODIFY_PORTE_REQUEST = 2;
     private PorteAdapter porteAdapter;
     private SearchView searchView;
-    private final List<PorteItem> filteredPorteList = new ArrayList<>();
-
     private GoogleMap mMap;
-
-    private static final int ADD_PORTE_REQUEST = 1;
     private PorteRepository porteRepository = new PorteRepository(null);
+    private TextView tvNoResult;
 
     public static List<PorteItem> getPorteList() {
         return porteList;
@@ -57,59 +57,88 @@ public class PorteActivity extends AppCompatActivity implements OnMapReadyCallba
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_portes);
 
-        Button backButton = findViewById(R.id.back_button);
-        FloatingActionButton addButton = findViewById(R.id.add_codeporte);
-        RecyclerView recyclerView = findViewById(R.id.list_code); // Assurez-vous que l'ID correspond à celui dans votre layout XML
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        TextView titreListCode = findViewById(R.id.titreListCode);
+        initUI();
+        loadPortes();
+    }
 
+    private void initUI() {
+        RecyclerView recyclerView = findViewById(R.id.list_code);
+        FloatingActionButton addButton = findViewById(R.id.add_codeporte);
+        Button backButton = findViewById(R.id.back_button);
+        searchView = findViewById(R.id.search_code);
+        tvNoResult = findViewById(R.id.tvNoResult);
+
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        setTitleText();
+
+        addButton.setOnClickListener(view -> addPorte(view));
+        backButton.setOnClickListener(view -> finishActivity());
+        tvNoResult.setOnClickListener(view -> addPorte(view));
+
+        setupMapFragment();
+    }
+
+    private void setTitleText() {
+        TextView titreListCode = findViewById(R.id.titreListCode);
         String nomGare = getIntent().getStringExtra("nomGare");
         titreListCode.setText("Liste des codes de la gare : " + nomGare);
+    }
 
+    private void setupMapFragment() {
+        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
+        mapFragment.getMapAsync(this);
+    }
+
+    private void loadPortes() {
         porteRepository = new PorteRepository(getIntent().getStringExtra("idGare"));
-
-        int positionGare = getIntent().getIntExtra("position", 0);
         porteRepository.getAllPortes().addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
                 List<PorteItem> portes = task.getResult();
-                recyclerView.setLayoutManager(new LinearLayoutManager(this));
-
-                filteredPorteList.addAll(portes); // Initialiser avec toutes les gares
+                filteredPorteList.addAll(portes);
+                RecyclerView recyclerView = findViewById(R.id.list_code);
                 porteAdapter = new PorteAdapter(filteredPorteList);
                 recyclerView.setAdapter(porteAdapter);
-
                 setupItemTouchHelper(recyclerView);
-
-                porteAdapter.setOnItemClickListener(position -> {
-                    // Ici, vous pouvez gérer le clic sur un élément, par exemple afficher les détails de la porte
-                });
-                searchView = findViewById(R.id.search_code);
-                setupSearchView();
+                porteAdapter.setOnItemClickListener(this::onPorteItemClick);
             }
+            updateUiBasedOnPortes();
         });
-        backButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent resultIntent = new Intent();
-                setResult(RESULT_OK, resultIntent);
-                finish();
-            }
-        });
+    }
 
-        addButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                addPorte(view);
-            }
-        });
+    private void onPorteItemClick(int position) {
+        if (position != RecyclerView.NO_POSITION) {
+            PorteItem selectedPorte = filteredPorteList.get(position);
+            zoomToPorte(selectedPorte);
+        }
+    }
 
-        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
-        mapFragment.getMapAsync(this);
+    private void zoomToPorte(PorteItem porte) {
+        double latitude = porte.getLatitude();
+        double longitude = porte.getLongitude();
+        LatLng porteLocation = new LatLng(latitude, longitude);
+        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(porteLocation, 50)); // Ajustez le niveau de zoom si nécessaire
+    }
+
+    private void finishActivity() {
+        Intent resultIntent = new Intent();
+        setResult(RESULT_OK, resultIntent);
+        finish();
+    }
+
+    private void updateUiBasedOnPortes() {
+        if (filteredPorteList.isEmpty()) {
+            tvNoResult.setVisibility(View.VISIBLE);
+            hideMap();
+        } else {
+            tvNoResult.setVisibility(View.GONE);
+            showMap();
+        }
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+        updatePorteList();
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
     }
@@ -117,20 +146,43 @@ public class PorteActivity extends AppCompatActivity implements OnMapReadyCallba
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
+        mMap.setMapType(GoogleMap.MAP_TYPE_SATELLITE);
         mMap.clear();
+
+        LatLngBounds.Builder builder = new LatLngBounds.Builder();
+
         porteRepository.getAllPortes().addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
                 List<PorteItem> portes = task.getResult();
                 for (PorteItem porte : portes) {
                     LatLng latLng = new LatLng(porte.getLatitude(), porte.getLongitude());
                     mMap.addMarker(new MarkerOptions().position(latLng).title(porte.getDescription()));
-                    mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
+                    builder.include(latLng);  // Ajouter le point à la construction des limites
+                }
+
+                if (!portes.isEmpty()) {
+                    LatLngBounds bounds = builder.build();
+                    // Ajustement pour les marges, ici spécifié comme 100, mais vous pouvez ajuster selon le besoin
+                    int padding = 100;
+                    CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, padding);
+                    mMap.animateCamera(cu);
                 }
             }
         });
     }
 
     private void setupSearchView() {
+        searchView.setOnQueryTextFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (hasFocus) {
+                    hideMap();
+                } else {
+                    showMap();
+                }
+            }
+        });
+
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
@@ -150,17 +202,23 @@ public class PorteActivity extends AppCompatActivity implements OnMapReadyCallba
                     filteredPorteList.addAll(filtered);
                 }
                 porteAdapter.notifyDataSetChanged();
-
-                // Afficher ou cacher le TextView basé sur la taille de filteredGareList
-                TextView tvNoResult = findViewById(R.id.tvNoResult);
-                if (filteredPorteList.isEmpty()) {
-                    tvNoResult.setVisibility(View.VISIBLE);
-                } else {
-                    tvNoResult.setVisibility(View.GONE);
-                }
                 return false;
             }
         });
+    }
+
+    private void showMap() {
+        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
+        if (mapFragment != null) {
+            getSupportFragmentManager().beginTransaction().show(mapFragment).commit();
+        }
+    }
+
+    private void hideMap() {
+        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
+        if (mapFragment != null) {
+            getSupportFragmentManager().beginTransaction().hide(mapFragment).commit();
+        }
     }
 
     private void setupItemTouchHelper(RecyclerView recyclerView) {
@@ -174,24 +232,25 @@ public class PorteActivity extends AppCompatActivity implements OnMapReadyCallba
             public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
                 // Utilisez viewHolder.getBindingAdapterPosition() pour obtenir la position actuelle
                 int position = viewHolder.getBindingAdapterPosition();
-                Log.d("onSwiped", "position : " + position);
+                Log.d("PorteActivity - onSwiped", "Position : " + position);
 
                 if (position != RecyclerView.NO_POSITION) {
                     PorteItem swipedPorte = filteredPorteList.get(position);
-                    int actualPosition = porteList.indexOf(swipedPorte);
+                    int actualPosition = findIndexInMainList(swipedPorte);
 
-                    Log.d("onSwiped", "swipedPorte : " + swipedPorte);
-                    Log.d("onSwiped", "actualPosition : " + actualPosition);
+                    Log.d("PorteActivity - onSwiped", "swipedPorte : " + swipedPorte);
+                    Log.d("PorteActivity - onSwiped", "actualPosition : " + actualPosition);
 
+                    if (actualPosition != -1) {
                     if (direction == ItemTouchHelper.LEFT) {
                         showDeleteConfirmationDialog(actualPosition);
                         Log.d("Gauche", "Suppression de la porte : " + swipedPorte.getDescription());
                     } else if (direction == ItemTouchHelper.RIGHT) {
                         modifyPorte(actualPosition);
                         Log.d("Droite", "Modification de la porte : " + swipedPorte.getDescription());
+                    }
                     } else {
-                        // Gérer le cas où la position n'est pas valide
-                        Log.e("PorteActivity", "Position invalide lors du swipe");
+                        Log.e("PorteActivity", "Élément non trouvé dans la liste principale.");
                     }
                     // Réinitialisation manuelle de la vue
                     viewHolder.itemView.setTranslationX(0);
@@ -249,19 +308,24 @@ public class PorteActivity extends AppCompatActivity implements OnMapReadyCallba
     }
 
     private int findIndexInMainList(PorteItem item) {
+        Log.d("PorteActivity", "Recherche de l'index pour l'item avec ID: " + item.getId());
         for (int i = 0; i < porteList.size(); i++) {
-            if (porteList.get(i).getId().equals(item.getId())) {
-                return i; // L'élément correspondant a été trouvé, retournez son index.
+            PorteItem currentItem = porteList.get(i);
+            Log.d("PorteActivity", "Comparaison avec l'item à l'index " + i + " ayant l'ID: " + currentItem.getId());
+            if (item.getId().equals(currentItem.getId())) {
+                Log.d("PorteActivity", "Correspondance trouvée à l'index: " + i);
+                return i;
             }
         }
-        return -1; // Si aucun élément correspondant n'a été trouvé, retournez -1.
+        Log.e("PorteActivity", "Aucune correspondance trouvée pour l'item avec ID: " + item.getId());
+        return -1;
     }
 
 
     private void showDeleteConfirmationDialog(final int position) {
         new AlertDialog.Builder(this)
                 .setTitle("Suppression")
-                .setMessage("Voulez-vous vraiment supprimer cet porte " + porteList.get(position).getDescription() + " ?")
+                .setMessage("Voulez-vous vraiment supprimer la porte " + porteList.get(position).getDescription() + " de la gare " + getIntent().getStringExtra("nomGare") + " ?")
                 .setPositiveButton(R.string.action_yes, (dialog, which) -> {
                     // Suppression confirmée
                     deletePorte(position);
@@ -276,27 +340,27 @@ public class PorteActivity extends AppCompatActivity implements OnMapReadyCallba
 
     private void deletePorte(int position) {
         if (position >= 0 && position < porteList.size()) {
-            PorteItem porteToDelete = porteList.get(position);
-            // Supprimez la porte de la base de données
-            // Ceci est un exemple, remplacez-le par votre propre méthode de suppression dans PorteRepository
-            PorteRepository porteRepository = new PorteRepository(getIntent().getStringExtra("idGare"));
-            porteRepository.deletePorte(porteToDelete.getId());
-
-            // Supprimez la porte de la liste affichée
+            // Supprime de la liste principale
             porteList.remove(position);
-            filteredPorteList.remove(porteToDelete);  // Assurez-vous que la liste filtrée est également mise à jour
+            porteRepository.deletePorte(filteredPorteList.get(position).getId());
+
+            // Mise à jour et filtrage de la liste affichée si nécessaire
+            updateFilteredPorteList();
+
             porteAdapter.notifyItemRemoved(position);
             porteAdapter.notifyItemRangeChanged(position, porteList.size());
         }
     }
 
     private void modifyPorte(int position) {
-        Log.d("Droite", "Position : " + position);
         if (position >= 0 && position < porteList.size()) {
             PorteItem porteToModify = porteList.get(position);
             // Lancez une activité pour modifier la porte, passez les données nécessaires
             Intent intent = new Intent(PorteActivity.this, AddPorteActivity.class);
-            intent.putExtra("porteId", porteToModify.getId());
+            intent.putExtra("position", position);
+            intent.putExtra("idGare", getIntent().getStringExtra("idGare"));
+            intent.putExtra("nomGare", getIntent().getStringExtra("nomGare"));
+
             // Vous pouvez passer d'autres données au besoin
             startActivityForResult(intent, MODIFY_PORTE_REQUEST);
         }
@@ -305,8 +369,22 @@ public class PorteActivity extends AppCompatActivity implements OnMapReadyCallba
     public void addPorte(View view) {
         Intent intent = new Intent(this, AddPorteActivity.class);
         intent.putExtra("idGare", getIntent().getStringExtra("idGare"));
-        Log.d("addPorte", "idGare : " + getIntent().getStringExtra("idGare"));
+        intent.putExtra("nomGare", getIntent().getStringExtra("nomGare"));
+        Log.d("PorteActivity - AddPorte", "idGare : " + getIntent().getStringExtra("idGare"));
         startActivityForResult(intent, ADD_PORTE_REQUEST);
+    }
+
+    private void updatePorteList() {
+        PorteRepository porteRepository = new PorteRepository(getIntent().getStringExtra("idGare"));
+        porteRepository.getAllPortes().addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                List<PorteItem> portes = task.getResult();
+                porteList.clear();
+                porteList.addAll(portes);
+                updateFilteredPorteList();
+                porteAdapter.notifyDataSetChanged();
+            }
+        });
     }
 
     @Override
@@ -316,18 +394,24 @@ public class PorteActivity extends AppCompatActivity implements OnMapReadyCallba
             String idGare = getIntent().getStringExtra("idGare");
 
             PorteRepository porteRepository = new PorteRepository(idGare);
-            porteRepository.getAllPortes().addOnSuccessListener(new OnSuccessListener<List<PorteItem>>() {
-                @Override
-                public void onSuccess(List<PorteItem> porteItems) {
-                    // Mettez à jour les listes de portes avec les nouvelles données
+            porteRepository.getAllPortes().addOnCompleteListener(task -> {
+                if (task.isSuccessful()) {
+                    List<PorteItem> portes = task.getResult();
                     porteList.clear();
-                    porteList.addAll(porteItems);
-                    filteredPorteList.clear();
-                    filteredPorteList.addAll(porteItems);
+                    porteList.addAll(portes);
+                    updateFilteredPorteList();
                     porteAdapter.notifyDataSetChanged();
                 }
             });
         }
+    }
+
+    private void updateFilteredPorteList() {
+        // Met à jour filteredGareList basé sur votre logique de filtrage actuelle
+        // Par exemple, si aucun filtre n'est appliqué, copiez simplement gareList
+        filteredPorteList.clear();
+        filteredPorteList.addAll(porteList);
+        // Si un filtre est appliqué, refiltrez gareList ici selon vos critères de filtrage
     }
 
     public void annulerRetour(View view) {
