@@ -7,6 +7,9 @@ public class PorteItem {
     private String code;
     private double longitude;
     private double latitude;
+    private String idGare;
+
+    public PorteItem() {}
 
     public PorteItem(String description, String code, double longitude, double latitude) {
         this.description = description;
@@ -61,16 +64,11 @@ public class PorteItem {
         this.latitude = latitude;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof PorteItem)) return false;
-        PorteItem porteItem = (PorteItem) o;
-        return id != null && id.equals(porteItem.id);
+    public String getIdGare() {
+        return idGare;
     }
 
-    @Override
-    public int hashCode() {
-        return id != null ? id.hashCode() : 0;
+    public void setIdGare(String idGare) {
+        this.idGare = idGare;
     }
 }

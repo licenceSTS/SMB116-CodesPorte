@@ -11,17 +11,20 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
 import fr.sts.codesporte.GareItem;
 import fr.sts.codesporte.PorteItem;
 
 public class GareRepository {
     private static final String TAG = "GareRepository";
-    private final FirebaseFirestore db;
-    private final CollectionReference garesCollection;
+    private FirebaseFirestore db;
+    private CollectionReference garesCollection;
 
-    private final List<PorteItem> porteList = new ArrayList<>();
+    private List<PorteItem> porteList = new ArrayList<>();
 
     public GareRepository() {
         db = FirebaseFirestore.getInstance();
@@ -63,7 +66,7 @@ public class GareRepository {
                         double latitude = documentSnapshot.getDouble("latitude");
                         double longitude = documentSnapshot.getDouble("longitude");
                         List<PorteItem> porteList = (List<PorteItem>) allPorteResults.get(i);
-                        GareItem gare = new GareItem(documentSnapshot.getId(), nom, porteList, latitude, longitude);
+                        GareItem gare = new GareItem(documentSnapshot.getId() ,nom, porteList, latitude, longitude);
                         gares.add(gare);
                     }
                     return gares;
@@ -92,6 +95,7 @@ public class GareRepository {
 
     public void deleteGare(String gareId) {
         // Supprimer une gare de la collection "gares"
+
         PorteRepository porteRepository = new PorteRepository(gareId);
         porteRepository.getAllPortesFromGare().addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
