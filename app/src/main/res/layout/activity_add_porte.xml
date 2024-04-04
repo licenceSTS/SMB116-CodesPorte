@@ -67,7 +67,7 @@
         android:layout_marginTop="16dp"
         android:layout_marginEnd="16dp"
         android:layout_marginBottom="16dp"
-        android:text="@string/add_gare"
+        android:text="@string/add_porte"
         app:backgroundTint="@color/bgPrimary"
         app:icon="@drawable/ic_add"
         android:onClick="ajouterModifier"/>

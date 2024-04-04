@@ -1,13 +1,5 @@
 package fr.sts.codesporte;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.ContextCompat;
-import androidx.recyclerview.widget.ItemTouchHelper;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.graphics.Canvas;
@@ -17,20 +9,27 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.SearchView;
-import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.ItemTouchHelper;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.MapFragment;
+import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.gms.maps.OnMapReadyCallback;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import fr.sts.codesporte.repository.GareRepository;
@@ -45,20 +44,24 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private GoogleMap mMap;
 
-    private GareRepository gareRepository = new GareRepository();
-    private android.util.Log Log;
+    private final GareRepository gareRepository = new GareRepository();
+
+    public static List<GareItem> getGareList() {
+        return gareList;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        RecyclerView recyclerView = findViewById(R.id.list_gare);
+        FloatingActionButton addButton = findViewById(R.id.add_gare);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+
         gareRepository.getAllGares().addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
                 List<GareItem> gares = task.getResult();
-                RecyclerView recyclerView = findViewById(R.id.list_gare);
-                FloatingActionButton addButton = findViewById(R.id.add_gare);
-                recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
                 filteredGareList.addAll(gares); // Initialiser avec toutes les gares
                 gareAdapter = new GareAdapter(filteredGareList);
@@ -67,10 +70,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 setupItemTouchHelper(recyclerView);
 
                 gareAdapter.setOnItemClickListener(position -> {
-                    GareItem gareItem = gareList.get(position);
                     Intent intent = new Intent(MainActivity.this, PorteActivity.class);
                     intent.putExtra("position", position);
-                    intent.putExtra("idGare", gareItem.getId());
+                    intent.putExtra("nomGare", gareList.get(position).getNom());
+                    intent.putExtra("idGare", gareList.get(position).getId());
                     startActivity(intent);
                 });
 
@@ -91,31 +94,53 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        updateGareList();
+        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
+        mapFragment.getMapAsync(this);
+    }
+
+    @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-        // Add a marker in Sydney, Australia, and move the camera.
+        mMap.setMapType(GoogleMap.MAP_TYPE_SATELLITE);
         mMap.clear();
+
+        LatLngBounds.Builder builder = new LatLngBounds.Builder();
+
         gareRepository.getAllGares().addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
                 List<GareItem> gares = task.getResult();
                 for (GareItem gare : gares) {
                     LatLng latLng = new LatLng(gare.getLatitude(), gare.getLongitude());
                     mMap.addMarker(new MarkerOptions().position(latLng).title(gare.getNom()));
-                    mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
+                    builder.include(latLng);  // Ajouter le point à la construction des limites
                 }
-                Log.d("MainActivity", "Nombre de gares récupérées: " + gares.size());
-                // Reste du code...
-            } else {
-                Log.e("MainActivity", "Erreur lors de la récupération des gares", task.getException());
+
+                if (!gares.isEmpty()) {
+                    LatLngBounds bounds = builder.build();
+                    // Ajustement pour les marges, ici spécifié comme 100, mais vous pouvez ajuster selon le besoin
+                    int padding = 100;
+                    CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, padding);
+                    mMap.animateCamera(cu);
+                }
             }
         });
     }
 
-    public static List<GareItem> getGareList() {
-        return gareList;
-    }
-
     private void setupSearchView() {
+        searchView.setOnQueryTextFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (hasFocus) {
+                    hideMap();
+                } else {
+                    showMap();
+                }
+            }
+        });
+
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
@@ -135,18 +160,23 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     filteredGareList.addAll(filtered);
                 }
                 gareAdapter.notifyDataSetChanged();
-
-                // Afficher ou cacher le TextView basé sur la taille de filteredGareList
-                TextView tvNoResult = findViewById(R.id.tvNoResult);
-                if (filteredGareList.isEmpty()) {
-                    tvNoResult.setVisibility(View.VISIBLE);
-                } else {
-                    tvNoResult.setVisibility(View.GONE);
-                }
-
                 return false;
             }
         });
+    }
+
+    private void showMap() {
+        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
+        if (mapFragment != null) {
+            getSupportFragmentManager().beginTransaction().show(mapFragment).commit();
+        }
+    }
+
+    private void hideMap() {
+        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
+        if (mapFragment != null) {
+            getSupportFragmentManager().beginTransaction().hide(mapFragment).commit();
+        }
     }
 
     private void setupItemTouchHelper(RecyclerView recyclerView) {
@@ -163,6 +193,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 if (position != RecyclerView.NO_POSITION) {
                     GareItem swipedGare = filteredGareList.get(position);
                     int actualPosition = gareList.indexOf(swipedGare);
+                    Log.d("MainActivity - onSwiped", "swipedGare : " + swipedGare);
+                    Log.d("MainActivity - onSwiped", "actualPosition : " + actualPosition);
                     if (direction == ItemTouchHelper.LEFT) {
                         showDeleteConfirmationDialog(actualPosition);
                     } else if (direction == ItemTouchHelper.RIGHT) {
@@ -226,7 +258,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private void showDeleteConfirmationDialog(final int actualPosition) {
         new AlertDialog.Builder(this)
                 .setTitle("Suppression")
-                .setMessage("Voulez-vous vraiment supprimer la gare "+filteredGareList.get(actualPosition).getNom()+" ?")
+                .setMessage("Voulez-vous vraiment supprimer cet gare " + filteredGareList.get(actualPosition).getNom() + " ?")
                 .setPositiveButton(R.string.action_yes, (dialog, which) -> deleteGare(actualPosition))
                 .setNegativeButton(R.string.action_no, (dialog, which) -> gareAdapter.notifyItemChanged(actualPosition)) // Réinitialise l'état visuel de l'item
                 .setIcon(android.R.drawable.ic_dialog_alert)
@@ -243,7 +275,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             updateFilteredGareList();
 
             // Inutile d'appeler notifyItemRemoved et notifyItemRangeChanged en même temps
-            gareAdapter.notifyDataSetChanged(); // Ceci est suffisant pour rafraîchir la vue
+            gareAdapter.notifyItemRemoved(actualPosition);
+            gareAdapter.notifyItemRangeChanged(actualPosition, gareList.size());
         }
     }
 
@@ -256,8 +289,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     private void modifyGare(int position) {
-        Intent intent = new Intent(this, AddGareActivity.class);
-        intent.putExtra("modify", true);
+        Intent intent = new Intent(MainActivity.this, AddGareActivity.class);
         intent.putExtra("position", position);
         startActivity(intent);
     }
@@ -278,14 +310,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 gareAdapter.notifyDataSetChanged();
             }
         });
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        updateGareList();
-        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
-        mapFragment.getMapAsync(this);
     }
 
     @Override
